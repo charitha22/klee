@@ -1,4 +1,3 @@
-include ../make.config
 file_name=array_loop_with_if_else
 
 all: $(file_name).c
@@ -13,4 +12,3 @@ klee: $(file_name).merged.ll
 
 clean:
 	rm  -rf *.ll output*.* .*.dot klee-out-*/ klee-last
-

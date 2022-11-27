@@ -1,21 +1,18 @@
 LLVM_HOME=~/PLCL/llvm-project-rocm/build
 clang=$(LLVM_HOME)/bin/clang
 opt=$(LLVM_HOME)/bin/opt
-cfmerger_flags=-mem2reg -cfmelder-codesize -S -force-cf-merging 
+cfmerger_flags=-mem2reg -cfmelder  -S -force-cf-merging 
 klee_include=~/PLCL/klee/include/
 clang_flags=-I $(klee_include) -emit-llvm -S -Xclang -disable-O0-optnone
-file_name=function_call
+file_name=fibonacci_recursive
 function_to_analzye_in_cfg=foo
 
 all: $(file_name).c
 	${clang} ${clang_flags} $(file_name).c
 	${opt} ${cfmerger_flags} < $(file_name).ll > $(file_name).merged.ll
 
-hello: $(file_name).merged.ll
-	~/PLCL/llvm-project-rocm/build/bin/opt -enable-new-pm=0 -load ~/PLCL/llvm-project-rocm/build/lib/LLVMHello.so -hello < $(file_name).merged.ll > /dev/null
-
 cfgNOCFM: $(file_name).ll
-	opt -mem2reg -dot-cfg $(file_name).ll
+	opt -dot-cfg $(file_name).ll
 	dot -Tsvg .$(function_to_analzye_in_cfg).dot -o $(function_to_analzye_in_cfg).svg
 
 cfg: $(file_name).merged.ll
