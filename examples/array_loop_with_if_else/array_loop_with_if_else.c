@@ -9,7 +9,7 @@ void foo(int *arr) {
     if(arr[i] >= 5) {
       temp = arr[i];
       temp++;
-      temp*=10;
+      /*temp*=10;*/
       temp-=15;
     } else {
       temp = arr[i];

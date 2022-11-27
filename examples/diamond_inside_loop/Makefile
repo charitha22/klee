@@ -1,5 +1,5 @@
-include ../make.config
-file_name=array_loop_with_if_else
+include ../makefile.in
+file_name=diamond_inside_loop
 
 all: $(file_name).c
 	${CLANG} ${CLANG_FLAGS} $(file_name).c
