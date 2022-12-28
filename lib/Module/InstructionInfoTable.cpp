@@ -135,6 +135,8 @@ public:
     // Retrieve debug information associated with instruction
     auto dl = Inst.getDebugLoc();
 
+    // We unfold the meta data and populate the merged line member here.
+
     // Check if a valid debug location is assigned to the instruction.
     if (dl.get() != nullptr) {
       auto full_path = dl.get()->getFilename();
