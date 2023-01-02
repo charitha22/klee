@@ -365,6 +365,9 @@ void StatsTracker::stepInstruction(ExecutionState &es) {
 
         // if IntructionInfo has merged line number then update the corresponding
         // lines in the coveredLines map otherwise perform the default.
+        // if mergedLine exists
+        //es.coveredLines[&ii.file].insert(l1);
+        //es.coveredLines[&ii.file].insert(l2);
           es.coveredLines[&ii.file].insert(ii.line);
 	es.coveredNew = true;
         es.instsSinceCovNew = 1;

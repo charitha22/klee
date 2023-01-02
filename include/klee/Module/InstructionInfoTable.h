@@ -36,6 +36,7 @@ namespace klee {
     /// @brief Source file name.
     const std::string &file;
     /// new member merged line number
+    // std::string mergedLine
 
   public:
     InstructionInfo(unsigned id, const std::string &file, unsigned line,
