@@ -3,7 +3,7 @@ clang=$(LLVM_HOME)/bin/clang
 opt=$(LLVM_HOME)/bin/opt
 cfmerger_flags=-mem2reg -cfmelder-codesize -S -force-cf-merging 
 klee_include=~/PLCL/klee/include/
-clang_flags=-I $(klee_include) -emit-llvm -S -Xclang -disable-O0-optnone
+clang_flags=-I $(klee_include) -g -emit-llvm -S -Xclang -disable-O0-optnone
 file_name=function_call
 function_to_analzye_in_cfg=foo
 
