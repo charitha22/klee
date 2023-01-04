@@ -23,10 +23,10 @@ cfg: $(file_name).merged.ll
 	dot -Tsvg .$(function_to_analzye_in_cfg).dot -o $(function_to_analzye_in_cfg)_merged.svg
 
 kleeNOCFM: $(file_name).ll
-	klee $(file_name).ll
+	klee --only-output-states-covering-new --write-cov $(file_name).ll
 
 klee: $(file_name).merged.ll
-	klee $(file_name).merged.ll
+	klee --only-output-states-covering-new --write-cov $(file_name).merged.ll
 
 clean:
 	rm  -rf *.ll output*.* .*.dot klee-out-*/ klee-last *.svg
