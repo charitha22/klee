@@ -31,6 +31,8 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <stdio.h>
+#include <iostream>
 
 using namespace klee;
 
@@ -139,13 +141,26 @@ public:
     // Retrieve mergedLine debug information with instruction
     auto mergedLineMetaData = Inst.getMetadata("mergedLineNum");
     auto sourceLineMetaData = Inst.getMetadata("sourceFile");
+
+    // std::string str;
+    // llvm::raw_string_ostream os(str);
+    // Inst.print(os);
+    // std::cout << str << std::endl;
+    // os.flush();
     
     // Assign valid merged location string to instruction
-    if(mergedLineMetaData) {
+    if(mergedLineMetaData != nullptr) {
       std::string mergedLineString = llvm::cast<llvm::MDString>(mergedLineMetaData->getOperand(0))->getString().str();
       std::string sourceFile = "";
       if(sourceLineMetaData) {
         sourceFile = llvm::cast<llvm::MDString>(sourceLineMetaData->getOperand(0))->getString().str();
+      } else {
+        // std::string str;
+        // llvm::raw_string_ostream os(str);
+        // Inst.print(os);
+        // std::cout << str << std::endl;
+        // os.flush();
+        //klee_error(std::to_string(asmLine).c_str());
       }
       return std::make_unique<InstructionInfo>(
         InstructionInfo(0, getInternedString(sourceFile), 0, 0, asmLine, mergedLineString));
@@ -172,10 +187,12 @@ public:
 
     if (f != nullptr) {
       // If nothing found, use the surrounding function
+      //klee_warning(std::to_string(asmLine).c_str());
       return std::make_unique<InstructionInfo>(
           InstructionInfo(0, f->file, f->line, 0, asmLine, getInternedString("")));
     }
     // If nothing found, use the surrounding function
+    //klee_error(std::to_string(asmLine).c_str());
     return std::make_unique<InstructionInfo>(
         InstructionInfo(0, getInternedString(""), 0, 0, asmLine, getInternedString("")));
   }
@@ -187,8 +204,12 @@ InstructionInfoTable::InstructionInfoTable(const llvm::Module &m) {
   for (const auto &Func : m) {
     auto F = DI.getFunctionInfo(Func);
     auto FR = F.get();
+    // std::string str;
+    // llvm::raw_string_ostream os(str);
+    // Func.print(os);
+    // std::cout << str << std::endl;
     functionInfos.insert(std::make_pair(&Func, std::move(F)));
-
+    //os.flush();
     for (auto it = llvm::inst_begin(Func), ie = llvm::inst_end(Func); it != ie;
          ++it) {
       auto instr = &*it;

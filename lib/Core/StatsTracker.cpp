@@ -43,9 +43,12 @@
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/Process.h"
+#include "klee/Support/ErrorHandling.h"
 
 #include <fstream>
 #include <unistd.h>
+#include <string>
+#include <iostream>
 
 using namespace klee;
 using namespace llvm;
@@ -346,6 +349,11 @@ void StatsTracker::stepInstruction(ExecutionState &es) {
     }
 
     Instruction *inst = es.pc->inst;
+    // std::string str;
+    // llvm::raw_string_ostream os(str);
+    // //InstructionToLineAnnotator a;
+    // inst->print(os);
+    // std::cout << str << std::endl;
     const InstructionInfo &ii = *es.pc->info;
     StackFrame &sf = es.stack.back();
     theStatisticManager->setIndex(ii.id);
