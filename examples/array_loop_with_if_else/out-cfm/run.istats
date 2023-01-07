@@ -1,0 +1,53 @@
+version: 1
+creator: klee
+pid: 130324
+cmd: array_loop_with_if_else.merged.ll
+
+
+positions: instr line
+event: Icov : CoveredInstructions
+event: Forks : Forks
+event: Ireal : InstructionRealTimes
+event: Itime : InstructionTimes
+event: I : Instructions
+event: UCdist : MinDistToUncovered
+event: Rtime : ResolveTime
+event: States : States
+event: Iuncov : UncoveredInstructions
+event: Q : Queries
+event: Qiv : QueriesInvalid
+event: Qv : QueriesValid
+event: Qtime : QueryTime
+events: Icov Forks Ireal Itime I UCdist Rtime States Iuncov Q Qiv Qv Qtime 
+ob=assembly.ll
+fn=foo
+11 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+14 0 1 0 0 0 11 0 0 0 0 0 0 0 0 
+15 0 1 0 0 0 11 0 0 0 0 0 0 0 0 
+16 0 1 0 0 0 11 0 0 0 0 0 0 0 0 
+19 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+20 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+21 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+22 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+23 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+24 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+25 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+26 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+27 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+28 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+29 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+30 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+31 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+32 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+33 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+36 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+fn=main
+45 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+46 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+47 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+48 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+49 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+cfn=foo
+calls=1 8 0
+49 0 20 0 0 0 185 0 0 0 0 0 0 0 0 
+50 0 1 0 0 0 1 0 0 0 0 0 0 0 0 

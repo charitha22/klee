@@ -6,10 +6,10 @@ all: $(file_name).c
 	${OPT} ${CFMSE_FLAGS} < $(file_name).ll > $(file_name).merged.ll
 
 kleeNOCFM: $(file_name).ll
-	${KLEE} $(file_name).ll
+	klee --only-output-states-covering-new --write-cov $(file_name).ll
 
 klee: $(file_name).merged.ll
-	${KLEE} $(file_name).merged.ll
+	klee --only-output-states-covering-new --write-cov $(file_name).merged.ll
 
 clean:
 	rm  -rf *.ll output*.* .*.dot klee-out-*/ klee-last
