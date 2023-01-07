@@ -110,6 +110,11 @@ namespace {
                              cl::desc("Allow optimization of functions that "
                                       "contain KLEE calls (default=true)"),
                              cl::init(true), cl::cat(ModuleCat));
+
+  cl::opt<bool>
+  CFMSE("cfmse",
+          cl::desc("Enable CFMSE Pass (default=false)"),
+          cl::init(false), cl::cat(ModuleCat));
 }
 
 /***/
@@ -296,6 +301,7 @@ void KModule::optimiseAndPrepare(
   pm3.add(createScalarizerPass());
   pm3.add(new PhiCleanerPass());
   pm3.add(new FunctionAliasPass());
+  if (CFMSE) pm3.add(createCFMelderCodeSizePass());
   pm3.run(*module);
 }
 
