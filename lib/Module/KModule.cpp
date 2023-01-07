@@ -291,6 +291,7 @@ void KModule::optimiseAndPrepare(
   // directly I think?
   legacy::PassManager pm3;
   pm3.add(createCFGSimplificationPass());
+  if (CFMSE) pm3.add(createCFMelderCodeSizePass());
   switch(SwitchType) {
   case eSwitchTypeInternal: break;
   case eSwitchTypeSimple: pm3.add(new LowerSwitchPass()); break;
@@ -301,7 +302,6 @@ void KModule::optimiseAndPrepare(
   pm3.add(createScalarizerPass());
   pm3.add(new PhiCleanerPass());
   pm3.add(new FunctionAliasPass());
-  if (CFMSE) pm3.add(createCFMelderCodeSizePass());
   pm3.run(*module);
 }
 
