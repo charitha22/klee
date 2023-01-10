@@ -1,0 +1,3 @@
+[submodule "benchmarks/ansibench"]
+	path = benchmarks/ansibench
+	url = git@github.com:nfinit/ansibench.git

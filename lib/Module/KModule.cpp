@@ -110,6 +110,11 @@ namespace {
                              cl::desc("Allow optimization of functions that "
                                       "contain KLEE calls (default=true)"),
                              cl::init(true), cl::cat(ModuleCat));
+
+  cl::opt<bool>
+  CFMSE("cfmse",
+          cl::desc("Enable CFMSE Pass (default=false)"),
+          cl::init(false), cl::cat(ModuleCat));
 }
 
 /***/
@@ -286,6 +291,7 @@ void KModule::optimiseAndPrepare(
   // directly I think?
   legacy::PassManager pm3;
   pm3.add(createCFGSimplificationPass());
+  if (CFMSE) pm3.add(createCFMelderCodeSizePass());
   switch(SwitchType) {
   case eSwitchTypeInternal: break;
   case eSwitchTypeSimple: pm3.add(new LowerSwitchPass()); break;
