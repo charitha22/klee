@@ -1,10 +1,10 @@
-KLEE_HOME=/home/min/a/cgusthin/git/klee/
-LLVM_HOME=/home/min/a/cgusthin/git/llvm-project-rocm/build_cfmse
+KLEE_HOME=~/PLCL/klee/
+LLVM_HOME=~/PLCL/llvm-project-rocm/build_cfmse_install
 
 CLANG=$(LLVM_HOME)/bin/clang
 OPT=$(LLVM_HOME)/bin/opt
 KLEE_BIN=$(KLEE_HOME)/build/bin/klee
 
-CFMSE_FLAGS=-enable-new-pm -mem2reg -cfmse  -S
+CFMSE_FLAGS=-enable-new-pm -mem2reg -S
 KLEE_INCLUDE=$(KLEE_HOME)/include
-CLANG_FLAGS=-I $(KLEE_INCLUDE) -emit-llvm -S -Xclang -disable-O0-optnone
+CLANG_FLAGS=-I $(KLEE_INCLUDE) -g -emit-llvm -S -Xclang -disable-O0-optnone

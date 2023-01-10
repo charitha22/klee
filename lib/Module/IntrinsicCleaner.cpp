@@ -29,6 +29,7 @@
 #include "llvm/Pass.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
+#include <iostream>
 
 using namespace llvm;
 
@@ -38,10 +39,17 @@ char IntrinsicCleanerPass::ID;
 
 bool IntrinsicCleanerPass::runOnModule(Module &M) {
   bool dirty = false;
-  for (Module::iterator f = M.begin(), fe = M.end(); f != fe; ++f)
+  
+  for (Module::iterator f = M.begin(), fe = M.end(); f != fe; ++f) {
+    // std::string str;
+    // llvm::raw_string_ostream os(str);
+    // //InstructionToLineAnnotator a;
+    // f->print(os);
+    // std::cout << str << std::endl;
     for (Function::iterator b = f->begin(), be = f->end(); b != be; ++b)
       dirty |= runOnBasicBlock(*b, M);
-
+  }
+    
   if (Function *Declare = M.getFunction("llvm.trap")) {
     Declare->eraseFromParent();
     dirty = true;

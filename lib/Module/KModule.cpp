@@ -41,6 +41,9 @@
 #include "llvm/Linker/Linker.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Path.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Analysis/CFG.h"
+#include "llvm/Analysis/CFGPrinter.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/raw_os_ostream.h"
 #include "llvm/Transforms/Scalar.h"
@@ -259,6 +262,22 @@ void KModule::instrument(const Interpreter::ModuleOptions &opts) {
   pm.run(*module);
 }
 
+static void writeCFGToDotFile(Function &F, std::string Prefix) {
+  std::string Filename = (Prefix + F.getName() + ".dot").str();
+  errs() << "Writing '" << Filename << "'...";
+
+  std::error_code EC;
+  raw_fd_ostream File(Filename, EC, sys::fs::OF_Text);
+
+  DOTFuncInfo CFGInfo(&F);
+
+  if (!EC)
+    WriteGraph(File, &CFGInfo);
+  else
+    errs() << "  error opening file for writing!";
+  errs() << "\n";
+}
+
 void KModule::optimiseAndPrepare(
     const Interpreter::ModuleOptions &opts,
     llvm::ArrayRef<const char *> preservedFunctions) {
@@ -303,6 +322,7 @@ void KModule::optimiseAndPrepare(
   pm3.add(new PhiCleanerPass());
   pm3.add(new FunctionAliasPass());
   pm3.run(*module);
+  //writeCFGToDotFile(*(module->getFunction("merge")), "after_optimizations_");
 }
 
 void KModule::manifest(InterpreterHandler *ih, bool forceSourceOutput) {

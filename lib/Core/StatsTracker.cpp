@@ -43,9 +43,12 @@
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/Process.h"
+#include "klee/Support/ErrorHandling.h"
 
 #include <fstream>
 #include <unistd.h>
+#include <string>
+#include <iostream>
 
 using namespace klee;
 using namespace llvm;
@@ -346,6 +349,11 @@ void StatsTracker::stepInstruction(ExecutionState &es) {
     }
 
     Instruction *inst = es.pc->inst;
+    // std::string str;
+    // llvm::raw_string_ostream os(str);
+    // //InstructionToLineAnnotator a;
+    // inst->print(os);
+    // std::cout << str << std::endl;
     const InstructionInfo &ii = *es.pc->info;
     StackFrame &sf = es.stack.back();
     theStatisticManager->setIndex(ii.id);
@@ -357,18 +365,32 @@ void StatsTracker::stepInstruction(ExecutionState &es) {
 
     if (sf.kf->trackCoverage && instructionIsCoverable(inst)) {
       if (!theStatisticManager->getIndexedValue(stats::coveredInstructions, ii.id)) {
-        // Checking for actual stoppoints avoids inconsistencies due
-        // to line number propogation.
-        //
-        // FIXME: This trick no longer works, we should fix this in the line
-        // number propogation.
-
         // if IntructionInfo has merged line number then update the corresponding
         // lines in the coveredLines map otherwise perform the default.
         // if mergedLine exists
-        //es.coveredLines[&ii.file].insert(l1);
-        //es.coveredLines[&ii.file].insert(l2);
+        if(ii.mergedLine != "") {
+          std::string delimiter = "_";
+          auto start = 0U;
+          auto end = ii.mergedLine.find(delimiter);
+          if(end == std::string::npos) { // if there is only one line number
+            es.coveredLines[&ii.file].insert(stoul(ii.mergedLine));
+          } else {
+            // split up merged line info and append to coveredLines
+            while (end != std::string::npos)
+            {
+              unsigned mergedLineNumber = stoul(ii.mergedLine.substr(start, end - start));
+              es.coveredLines[&ii.file].insert(mergedLineNumber);
+              start = end + delimiter.length();
+              end = ii.mergedLine.find(delimiter, start);
+            }
+            unsigned mergedLineNumber = stoul(ii.mergedLine.substr(start, end));
+            es.coveredLines[&ii.file].insert(mergedLineNumber);
+          }
+          
+        } else { // regular debugLoc lineNumber addition
           es.coveredLines[&ii.file].insert(ii.line);
+        }
+          
 	es.coveredNew = true;
         es.instsSinceCovNew = 1;
 	++stats::coveredInstructions;

@@ -35,13 +35,13 @@ namespace klee {
     unsigned assemblyLine;
     /// @brief Source file name.
     const std::string &file;
-    /// new member merged line number
-    // std::string mergedLine
+    /// @brief Merged line number in source file
+    std::string mergedLine;
 
   public:
     InstructionInfo(unsigned id, const std::string &file, unsigned line,
-                    unsigned column, unsigned assemblyLine)
-        : id{id}, line{line}, column{column}, assemblyLine{assemblyLine}, file{file} {}
+                    unsigned column, unsigned assemblyLine, std::string mergedLine)
+        : id{id}, line{line}, column{column}, assemblyLine{assemblyLine}, file{file}, mergedLine{mergedLine} {}
   };
 
   /// @brief FunctionInfo stores debug information for a KFunction.
