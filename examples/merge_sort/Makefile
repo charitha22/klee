@@ -1,7 +1,7 @@
 include ../makefile.in
 
-file_name=function_call
-function_to_analzye_in_cfg=foo
+file_name=merge_sort
+function_to_analzye_in_cfg=merge
 
 all: $(file_name).c
 	${CLANG} ${CLANG_FLAGS} $(file_name).c
