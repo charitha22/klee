@@ -15,11 +15,12 @@ cfg: $(file_name).ll
 	dot -Tsvg .$(function_to_analzye_in_cfg).dot -o $(function_to_analzye_in_cfg).svg
 
 kleeNOCFM: $(file_name).ll
-	$(KLEE_BIN) --only-output-states-covering-new --write-cov $(file_name).ll
+	$(KLEE_BIN)   --only-output-states-covering-new --write-cov $(file_name).ll
 
 klee: $(file_name).ll
-	$(KLEE_BIN) --cfmse --only-output-states-covering-new --write-cov $(file_name).ll
+	$(KLEE_BIN) --cfmse --cex-cache-exp --cex-cache-superset     --only-output-states-covering-new --write-cov $(file_name).ll
 
 clean:
-	rm  -rf *.ll output*.* *.dot klee-out-*/ klee-last *.svg
+	@rm  -rf  output*.* *.dot klee-out-*/ klee-last *.svg .*.dot *.bc
+	@find . -type f -name "*.ll" -not -name 'before_int.ll' -delete
 
