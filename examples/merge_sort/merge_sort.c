@@ -25,14 +25,20 @@ void merge(int arr[], int l, int m, int r)
     j = 0; // Initial index of second subarray
     k = l; // Initial index of merged subarray
     while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
-            i++;
-        }
-        else {
-            arr[k] = R[j];
-            j++;
-        }
+        // if (L[i] <= R[j]) {
+        //     arr[k] = L[i];
+        //     i++;
+        // }
+        // else {
+        //     arr[k] = R[j];
+        //     j++;
+        // }
+        // k++;
+        int LV = L[i];
+        int RV = R[j];
+        arr[k] = (LV <= RV) ? LV : RV;
+        i = (LV <= RV) ? i + 1 : i;
+        j = (LV <= RV) ? j : j + 1;
         k++;
     }
  

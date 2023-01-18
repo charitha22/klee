@@ -1,7 +1,8 @@
-KLEE_HOME=~/PLCL/klee/
+KLEE_HOME=~/PLCL/klee
 LLVM_HOME=~/PLCL/llvm-project-rocm/build_cfmse_install
 
 CLANG=$(LLVM_HOME)/bin/clang
+CLANG_CPP=$(LLVM_HOME)/bin/clang++
 OPT=$(LLVM_HOME)/bin/opt
 KLEE_BIN=$(KLEE_HOME)/build/bin/klee
 
