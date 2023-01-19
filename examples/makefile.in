@@ -8,4 +8,4 @@ KLEE_BIN=$(KLEE_HOME)/build/bin/klee
 
 CFMSE_FLAGS=-enable-new-pm -mem2reg -S
 KLEE_INCLUDE=$(KLEE_HOME)/include
-CLANG_FLAGS=-I $(KLEE_INCLUDE) -g -emit-llvm -S -Xclang -disable-O0-optnone
+CLANG_FLAGS=-I $(KLEE_INCLUDE) -emit-llvm -S -Xclang -disable-O0-optnone

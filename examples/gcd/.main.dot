@@ -1,0 +1,15 @@
+digraph "CFG for 'main' function" {
+	label="CFG for 'main' function";
+
+	Node0x55575b0571b0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{entry:\l  %n1 = alloca i32, align 4\l  %n2 = alloca i32, align 4\l  %0 = bitcast i32* %n1 to i8*\l  call void @klee_make_symbolic(i8* %0, i64 4, i8* getelementptr inbounds ([3\l... x i8], [3 x i8]* @.str, i64 0, i64 0))\l  %1 = bitcast i32* %n2 to i8*\l  call void @klee_make_symbolic(i8* %1, i64 4, i8* getelementptr inbounds ([3\l... x i8], [3 x i8]* @.str.1, i64 0, i64 0))\l  %2 = load i32, i32* %n1, align 4\l  %cmp = icmp sgt i32 %2, 0\l  br i1 %cmp, label %land.rhs, label %land.end\l|{<s0>T|<s1>F}}"];
+	Node0x55575b0571b0:s0 -> Node0x55575b0581c0;
+	Node0x55575b0571b0:s1 -> Node0x55575b058240;
+	Node0x55575b0581c0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#e8765c70",label="{land.rhs:                                         \l  %3 = load i32, i32* %n1, align 4\l  %cmp1 = icmp sle i32 %3, 10\l  br label %land.end\l}"];
+	Node0x55575b0581c0 -> Node0x55575b058240;
+	Node0x55575b058240 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{land.end:                                         \l  %4 = phi i1 [ false, %entry ], [ %cmp1, %land.rhs ]\l  %land.ext = zext i1 %4 to i32\l  %conv = sext i32 %land.ext to i64\l  call void @klee_assume(i64 %conv)\l  %5 = load i32, i32* %n2, align 4\l  %cmp2 = icmp sgt i32 %5, 0\l  br i1 %cmp2, label %land.rhs4, label %land.end7\l|{<s0>T|<s1>F}}"];
+	Node0x55575b058240:s0 -> Node0x55575b058990;
+	Node0x55575b058240:s1 -> Node0x55575b058a10;
+	Node0x55575b058990 [shape=record,color="#b70d28ff", style=filled, fillcolor="#e8765c70",label="{land.rhs4:                                        \l  %6 = load i32, i32* %n2, align 4\l  %cmp5 = icmp sle i32 %6, 10\l  br label %land.end7\l}"];
+	Node0x55575b058990 -> Node0x55575b058a10;
+	Node0x55575b058a10 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{land.end7:                                        \l  %7 = phi i1 [ false, %land.end ], [ %cmp5, %land.rhs4 ]\l  %land.ext8 = zext i1 %7 to i32\l  %conv9 = sext i32 %land.ext8 to i64\l  call void @klee_assume(i64 %conv9)\l  %8 = load i32, i32* %n1, align 4\l  %9 = load i32, i32* %n2, align 4\l  call void @foo(i32 %8, i32 %9)\l  ret i32 0\l}"];
+}

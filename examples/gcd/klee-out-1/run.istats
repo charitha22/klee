@@ -1,0 +1,65 @@
+version: 1
+creator: klee
+pid: 11661
+cmd: gcd.ll
+
+
+positions: instr line
+event: Icov : CoveredInstructions
+event: Forks : Forks
+event: Ireal : InstructionRealTimes
+event: Itime : InstructionTimes
+event: I : Instructions
+event: UCdist : MinDistToUncovered
+event: Rtime : ResolveTime
+event: States : States
+event: Iuncov : UncoveredInstructions
+event: Q : Queries
+event: Qiv : QueriesInvalid
+event: Qv : QueriesValid
+event: Qtime : QueryTime
+events: Icov Forks Ireal Itime I UCdist Rtime States Iuncov Q Qiv Qv Qtime 
+ob=assembly.ll
+fn=foo
+12 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+15 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+16 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+17 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+18 0 1 9 0 0 10 0 0 0 0 11 10 1 453812 
+21 0 1 0 0 0 9 0 0 0 0 0 0 0 0 
+22 0 1 0 0 0 9 0 0 0 0 0 0 0 0 
+23 0 1 0 0 0 9 0 0 0 0 0 0 0 0 
+24 0 1 0 0 0 9 0 0 0 0 0 0 0 0 
+25 0 1 0 0 0 9 0 0 0 0 0 0 0 0 
+26 0 1 0 0 0 9 0 0 0 0 0 0 0 0 
+29 0 1 0 0 0 10 0 0 0 0 0 0 0 0 
+fn=main
+35 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+36 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+37 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+38 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+39 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+40 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+41 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+42 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+43 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+44 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+45 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+46 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+47 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+48 0 1 0 0 0 1 0 0 0 0 1 1 0 21908 
+49 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+50 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+51 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+52 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+53 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+54 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+55 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+56 0 1 0 0 0 1 0 0 0 0 1 1 0 14446 
+57 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+58 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+59 0 1 0 0 0 1 0 0 0 0 0 0 0 0 
+cfn=foo
+calls=1 9 0
+59 0 12 9 0 0 105 0 0 0 0 11 10 1 453812 
+60 0 1 0 0 0 10 0 0 0 0 0 0 0 0 

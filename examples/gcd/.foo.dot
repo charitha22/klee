@@ -1,0 +1,19 @@
+digraph "CFG for 'foo' function" {
+	label="CFG for 'foo' function";
+
+	Node0x55575b055500 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#b9d0f970",label="{entry:\l  br label %while.cond\l}"];
+	Node0x55575b055500 -> Node0x55575b0555b0;
+	Node0x55575b0555b0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{while.cond:                                       \l  %n2.addr.0 = phi i32 [ %n2, %entry ], [ %n2.addr.1, %if.end ]\l  %n1.addr.0 = phi i32 [ %n1, %entry ], [ %n1.addr.1, %if.end ]\l  %cmp = icmp ne i32 %n1.addr.0, %n2.addr.0\l  br i1 %cmp, label %while.body, label %while.end\l|{<s0>T|<s1>F}}"];
+	Node0x55575b0555b0:s0 -> Node0x55575b055ae0;
+	Node0x55575b0555b0:s1 -> Node0x55575b055bc0;
+	Node0x55575b055ae0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#bb1b2c70",label="{while.body:                                       \l  %cmp1 = icmp sgt i32 %n1.addr.0, %n2.addr.0\l  br i1 %cmp1, label %if.then, label %if.else\l|{<s0>T|<s1>F}}"];
+	Node0x55575b055ae0:s0 -> Node0x55575b055e00;
+	Node0x55575b055ae0:s1 -> Node0x55575b055e70;
+	Node0x55575b055e00 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#e1675170",label="{if.then:                                          \l  %sub = sub nsw i32 %n1.addr.0, %n2.addr.0\l  br label %if.end\l}"];
+	Node0x55575b055e00 -> Node0x55575b055700;
+	Node0x55575b055e70 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#e1675170",label="{if.else:                                          \l  %sub2 = sub nsw i32 %n2.addr.0, %n1.addr.0\l  br label %if.end\l}"];
+	Node0x55575b055e70 -> Node0x55575b055700;
+	Node0x55575b055700 [shape=record,color="#b70d28ff", style=filled, fillcolor="#bb1b2c70",label="{if.end:                                           \l  %n2.addr.1 = phi i32 [ %n2.addr.0, %if.then ], [ %sub2, %if.else ]\l  %n1.addr.1 = phi i32 [ %sub, %if.then ], [ %n1.addr.0, %if.else ]\l  br label %while.cond, !llvm.loop !4\l}"];
+	Node0x55575b055700 -> Node0x55575b0555b0;
+	Node0x55575b055bc0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#b9d0f970",label="{while.end:                                        \l  ret void\l}"];
+}
