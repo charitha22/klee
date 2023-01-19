@@ -38,6 +38,7 @@ set(LLVM_COMPONENTS
   irreader
   linker
   support
+  passes
 )
 
 klee_get_llvm_libs(LLVM_LIBS ${LLVM_COMPONENTS})
