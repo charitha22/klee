@@ -1,5 +1,4 @@
-KLEE_HOME=~/PLCL/klee/
-LLVM_HOME=~/PLCL/llvm-project-rocm/build_cfmse_install
+# RUN `source setup_env.sh` first
 
 CLANG=$(LLVM_HOME)/bin/clang
 OPT=$(LLVM_HOME)/bin/opt

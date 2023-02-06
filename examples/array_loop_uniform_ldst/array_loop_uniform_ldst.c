@@ -11,25 +11,25 @@ void foo(int *arr) {
       temp++;
       temp*=10;  
       temp-=15;
+      arr[i] = temp;
     } else {
       temp = arr[i];
       temp+=50;
       temp*=20;
       temp-=-5;
+      arr[i] = temp;
     }
+    
   }
   
-  // for(int i = 0; i < 10; i++) {
-  //   printf("arr[%d]=%d\n", i, arr[i]);
-  // }
+  if (arr[0] == -5) {
+    printf("arr[0] is 0 in this path!\n");
+  }
+
 }
 
 int main() {
   int arr[10];
-
-  // for(int i = 0; i < 20; i++) {
-  //   scanf("%d", &arr[i]);
-  // }
 
   klee_make_symbolic(&arr, sizeof(arr), "arr");
 

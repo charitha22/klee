@@ -1,6 +1,6 @@
-include ../makefile.in
+include ../makefile.in.1
 
-file_name=array_loop_with_if_else
+file_name=array_loop_uniform_ldst
 function_to_analzye_in_cfg=foo
 
 all: $(file_name).c
@@ -20,6 +20,5 @@ kleeNOCFM: $(file_name).ll
 klee: $(file_name).ll
 	$(KLEE_BIN) --cfmse --only-output-states-covering-new --write-cov $(file_name).ll
 
-clean:
-	rm  -rf *.ll output*.* *.dot klee-out-*/ klee-last *.svg
-
+clean :
+	rm -rf *.ll output*.* *.dot klee-out-*/ klee-last *.svg *.bc .*.dot
