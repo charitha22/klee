@@ -4,7 +4,7 @@
 
 #include "klee/klee.h"
 #include <stdio.h>
-#define N 5
+#define N 100
 
 void foo(int *input, int nelems) {
   int sum = 0;
