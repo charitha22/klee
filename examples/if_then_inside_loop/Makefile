@@ -1,4 +1,4 @@
-include ../makefile.in.1
+include ../makefile.in
 
 file_name=if_then_inside_loop
 function_to_analzye_in_cfg=foo
@@ -20,6 +20,4 @@ kleeNOCFM: $(file_name).ll
 klee: $(file_name).ll
 	$(KLEE_BIN) --cfmse --only-output-states-covering-new --write-cov $(file_name).ll
 
-clean:
-	rm  -rf *.ll output*.* *.dot klee-out-*/ klee-last *.svg
-
+include ../makefile.clean

@@ -1,6 +1,6 @@
 include ../makefile.in
 
-file_name=fibonacci_recursive
+file_name=get_sign
 function_to_analzye_in_cfg=foo
 
 all: $(file_name).c
