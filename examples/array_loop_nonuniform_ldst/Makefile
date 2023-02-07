@@ -1,4 +1,4 @@
-include ../makefile.in.1
+include ../makefile.in
 
 file_name=array_loop_nonuniform_ldst
 function_to_analzye_in_cfg=foo
@@ -20,6 +20,4 @@ kleeNOCFM: $(file_name).ll
 klee: $(file_name).ll
 	$(KLEE_BIN) --cfmse --only-output-states-covering-new --write-cov $(file_name).ll
 
-clean:
-	rm  -rf *.ll output*.* *.dot klee-out-*/ klee-last *.svg *.bc .*.dot
-
+include ../makefile.clean

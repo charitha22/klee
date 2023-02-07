@@ -20,6 +20,8 @@ kleeNOCFM: $(file_name).ll
 klee: $(file_name).ll
 	$(KLEE_BIN) --cfmse --only-output-states-covering-new --write-cov $(file_name).ll
 
-clean:
-	rm  -rf *.ll output*.* *.dot klee-out-*/ klee-last *.svg
+
+include ../makefile.clean
+#clean:
+	#rm  -rf *.ll output*.* *.dot klee-out-*/ klee-last *.svg
 
