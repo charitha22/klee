@@ -67,8 +67,8 @@ int main() {
 
   int i, j, mask_type, number;
   int threshold = 1;
-  long length = 10;
-  long width = 10;
+  long length = 5;
+  long width = 5;
   short value = 1;
   short **the_image;
   short **out_image;
