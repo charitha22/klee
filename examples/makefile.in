@@ -7,4 +7,4 @@ KLEE_INCLUDE=$(KLEE_BUILD_DIR)/../include
 CLANG_FLAGS=-I $(KLEE_INCLUDE) -emit-llvm -S -Xclang -disable-O0-optnone
 
 KLEE_NOCFM_OPTIONS= --only-output-states-covering-new --write-cov
-KLEE_CFM_OPTIONS = $(KLEE_NOCFM_OPTIONS) -cfmse
+KLEE_CFM_OPTIONS = $(KLEE_NOCFM_OPTIONS) -klee-cfmse
