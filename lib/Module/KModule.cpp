@@ -19,6 +19,8 @@
 #include "llvm/Transforms/CFMSE/CFMSE.h"
 #include "llvm/Transforms/CFMelder/CFMelder.h"
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
+#include <string>
+#include <unordered_set>
 #define DEBUG_TYPE "KModule"
 
 #include "Passes.h"
@@ -265,6 +267,12 @@ void KModule::instrument(const Interpreter::ModuleOptions &opts) {
   pm.run(*module);
 }
 
+// method to filter external functions from being optimised
+static bool isExternalFunction(std::string funcName) {
+  static std::unordered_set<std::string> ExternalFuncs {"foo"};
+  return ExternalFuncs.count(funcName) > 0;
+}
+
 void KModule::optimiseAndPrepare(
     const Interpreter::ModuleOptions &opts,
     llvm::ArrayRef<const char *> preservedFunctions) {
@@ -338,6 +346,7 @@ void KModule::optimiseAndPrepare(
 
     // options for cfmse
     CFMSEOptions cfmseOptions;
+    cfmseOptions.IsExternalFunction = isExternalFunction;
     cfmseOptions.OnlyInLoops = true;
     cfmseOptions.OnlyMergeDiamond = true;
     cfmseOptions.OnlySymbolicBranches = true;
