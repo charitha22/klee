@@ -16,9 +16,9 @@ cfg: $(file_name).ll
 	dot -Tsvg .$(function_to_analzye_in_cfg).dot -o $(function_to_analzye_in_cfg).svg
 
 kleeNOCFM: $(file_name).ll
-	$(KLEE_BIN) --libc=uclibc --posix-runtime --only-output-states-covering-new --write-cov $(file_name).ll
+	$(KLEE_BIN) $(KLEE_NOCFM_OPTIONS) $(file_name).ll
 
 klee: $(file_name).ll
-	$(KLEE_BIN) --cfmse --only-output-states-covering-new --write-cov $(file_name).ll
+	$(KLEE_BIN) $(KLEE_CFM_OPTIONS) -klee-force-cfmse $(file_name).ll
 
 include ../makefile.clean

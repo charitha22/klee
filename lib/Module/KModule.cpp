@@ -115,8 +115,12 @@ cl::opt<bool> OptimiseKLEECall("klee-call-optimisation",
                                         "contain KLEE calls (default=true)"),
                                cl::init(true), cl::cat(ModuleCat));
 
-cl::opt<bool> CFMSE("cfmse", cl::desc("Enable CFMSE Pass (default=false)"),
+cl::opt<bool> KLEE_CFMSE("klee-cfmse", cl::desc("Enable CFMSE Pass (default=false)"),
                     cl::init(false), cl::cat(ModuleCat));
+
+cl::opt<bool> KLEE_ForceCFMSE("klee-force-cfmse",
+                       cl::desc("Force CFMSE on all branches"),
+                       cl::init(false), cl::cat(ModuleCat));
 } // namespace
 
 /***/
@@ -311,7 +315,7 @@ void KModule::optimiseAndPrepare(
   pm3.add(new PhiCleanerPass());
   pm3.add(new FunctionAliasPass());
   pm3.run(*module);
-  if (CFMSE) {
+  if (KLEE_CFMSE) {
     llvm::PassBuilder passBuilder;
     llvm::LoopAnalysisManager loopAnalysisManager;
     llvm::FunctionAnalysisManager functionAnalysisManager;
@@ -332,7 +336,18 @@ void KModule::optimiseAndPrepare(
 
     llvm::ModulePassManager modulePassManager;
 
-    modulePassManager.addPass(CFMSEPass());
+    // options for cfmse
+    CFMSEOptions cfmseOptions;
+    cfmseOptions.OnlyInLoops = true;
+    cfmseOptions.OnlyMergeDiamond = true;
+    cfmseOptions.OnlySymbolicBranches = true;
+
+    if (KLEE_ForceCFMSE){
+      cfmseOptions.OnlyInLoops = false;
+      cfmseOptions.OnlySymbolicBranches = false;
+    }
+
+    modulePassManager.addPass(CFMSEPass(cfmseOptions));
     modulePassManager.run(*module, moduleAnalysisManager);
   }
 
