@@ -2,7 +2,7 @@
 #define KLEE_EXTERNALFUNCTIONS_H
 #include <unordered_set>
 
-static std::unordered_set<std::string> ExternalFuncs{
+static const std::unordered_set<std::string> ExternalFuncs{
     "__uClibc_init",
     "__uClibc_fini",
     "__uClibc_main",

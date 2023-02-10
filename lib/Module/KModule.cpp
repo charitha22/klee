@@ -268,7 +268,7 @@ void KModule::instrument(const Interpreter::ModuleOptions &opts) {
 }
 
 // method to filter external functions from being optimised
-static bool isExternalFunction(std::string funcName) {
+static bool isExternalFunction(const std::string funcName) {
 #include "ExternalFunctions.h"
   return ExternalFuncs.count(funcName) > 0;
 }
