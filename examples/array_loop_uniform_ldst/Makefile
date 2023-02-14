@@ -18,6 +18,6 @@ kleeNOCFM: $(file_name).ll
 	$(KLEE_BIN) --only-output-states-covering-new --write-cov $(file_name).ll
 
 klee: $(file_name).ll
-	$(KLEE_BIN) --cfmse --only-output-states-covering-new --write-cov $(file_name).ll
+	$(KLEE_BIN) --klee-cfmse --only-output-states-covering-new --write-cov $(file_name).ll
 
 include ../makefile.clean

@@ -19,6 +19,6 @@ kleeNOCFM: $(file_name).ll
 	$(KLEE_BIN) $(KLEE_NOCFM_OPTIONS) $(file_name).ll
 
 klee: $(file_name).ll
-	$(KLEE_BIN) $(KLEE_CFM_OPTIONS) -klee-force-cfmse $(file_name).ll
+	$(KLEE_BIN) $(KLEE_CFM_OPTIONS)  $(file_name).ll
 
 include ../makefile.clean
