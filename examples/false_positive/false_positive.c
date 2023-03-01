@@ -4,20 +4,20 @@
 int main() {
   int arr[10]; 
   int i;
-  int y[10];
+  int y;
   klee_make_symbolic(&y, sizeof(y), "y");
-  //klee_make_symbolic(&arr, sizeof(arr), "arr");
 
-  if (y[5] != 0){
-    i = 8; 
-    i++; 
-    arr[i] = 10;
-  } else {
-    i = 9; 
-    i++;
+  for(int j = 0; j < 10; j++) {
+    if (y < 10){
+      i = 8; 
+      i++; 
+      arr[i] = 10;
+    } else {
+      i = 9; 
+      i++;
+    }
   }
-
-  printf("Done! \n");
+  //printf("Done! \n");
 
   return 0;
 }
