@@ -5,6 +5,8 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import multiprocessing
+import psutil
+from queue import Queue
 
 DEBUG = False
 
@@ -66,9 +68,10 @@ def analyzeErroringTest(ktest_path, test_directory, testfile_prefix):
     print("\033[0m")
   
 class TestDirectoryHandler(FileSystemEventHandler):
-    def __init__(self):
+    def __init__(self, queue):
       super().__init__
       self.main_test_output_directory = ""
+      self.queue = queue
     def on_any_event(self, event):
         if event.event_type == 'modified':
             if(".err" in event.src_path): # if an erroring test case has been made
@@ -86,6 +89,7 @@ class TestDirectoryHandler(FileSystemEventHandler):
                 if(self.main_test_output_directory == "" or self.main_test_output_directory == test_output_directory):
                   new_process = multiprocessing.Process(target=analyzeErroringTest, args=(test_output_directory + "/" + test_number + ".ktest", test_directory, testname_prefix))
                   new_process.start() ## run false positive error analysis on different process
+                  queue.put(new_process)
                   self.main_test_output_directory = test_output_directory
               else:
                 print("No match found")
@@ -127,9 +131,10 @@ if __name__ == "__main__":
       print(command)
     
     ## start a process to detect when files get added/changed
+    queue = Queue()
     observer = Observer()
     path = test_dir
-    event_handler = TestDirectoryHandler()
+    event_handler = TestDirectoryHandler(queue)
     observer.schedule(event_handler, path, recursive=True)
     observer.start()
     
@@ -170,6 +175,11 @@ if __name__ == "__main__":
     else:
       print("\033[1;31mSymbolic execution with transform failed for test ->", test_dir, end ="")
       print("\033[0m")
+    
+    ## waits for all false positive checking process to finish before moving to next test
+    while not queue.empty():
+      proc = queue.get()
+      proc.join()
     observer.stop()
     observer.join()
 
