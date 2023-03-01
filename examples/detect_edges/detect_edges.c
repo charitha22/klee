@@ -52,7 +52,7 @@ short **allocate_image_array(length, width) long length, width;
   for (i = 0; i < length; i++) {
     the_array[i] = (short *)malloc(width * sizeof(short));
     if (the_array[i] == NULL) {
-      printf("\n\tmalloc of the_image[%d] failed", i);
+     //printf("\n\tmalloc of the_image[%d] failed", i);
     } /* ends if */
   }   /* ends loop over i */
 
@@ -135,7 +135,7 @@ int perform_convolution(image, out_image,
    int   detect_type, high, threshold;
    long  rows, cols, bits_per_pixel;
 {
-
+  
    char response[80];
    int a,
        b,
@@ -180,10 +180,10 @@ int perform_convolution(image, out_image,
          out_image[i][j] = 0;
 
 
-   printf("\n ");
+   //printf("\n ");
 
    for(i=1; i<rows-1; i++){
-if( (i%10) == 0){ printf("%4d", i); }
+//if( (i%10) == 0){ printf("%4d", i); }
       for(j=1; j<cols-1; j++){
 
 
@@ -196,6 +196,7 @@ if( (i%10) == 0){ printf("%4d", i); }
          for(b=-1; b<2; b++){
             sum = sum + image[i+a][j+b] *
                   mask_0[a+1][b+1];
+                  //klee_assert(sum != 4);
          }
       }
          if(sum > max) sum = max;
@@ -208,7 +209,6 @@ if( (i%10) == 0){ printf("%4d", i); }
 
 
          /* 1 direction */
-
       sum = 0;
       for(a=-1; a<2; a++){
          for(b=-1; b<2; b++){
@@ -222,6 +222,7 @@ if( (i%10) == 0){ printf("%4d", i); }
                details. */
       if(sum > out_image[i][j])
          out_image[i][j]   = sum;
+         klee_assert(sum != 5);
 
 
          /* 2 direction */
@@ -365,29 +366,33 @@ return(1);
 int main() {
 
   int detect_type = SOBEL;
-  int threshold = 1;
-  long length = 4;
-  long width = 4;
-  int high = 1;
-  int bits_per_pixel = 1;
+  int threshold;
+  long length;
+  long width;
+  int high;
+  int bits_per_pixel;
   short **the_image;
   short **out_image;
 
-  // klee_make_symbolic(&length, sizeof(long), "length");
-  // klee_make_symbolic(&width, sizeof(long), "width");
+  klee_make_symbolic(&length, sizeof(long), "length");
+  klee_make_symbolic(&width, sizeof(long), "width");
 
-  // klee_assume(0 < length);
-  // klee_assume(length < 10);
+  klee_assume(0 < length);
+  klee_assume(length < 10);
 
-  // klee_assume(0 < width);
-  // klee_assume(width < 10);
+  klee_assume(0 < width);
+  klee_assume(width < 10);
 
-  the_image = allocate_image_array(length, width);
-  out_image = allocate_image_array(length, width);
+  the_image = allocate_image_array(10, 10);
+  out_image = allocate_image_array(10, 10);
 
   for (int i = 0; i < length; i++) {
-    klee_make_symbolic(the_image[i], width * sizeof(short), "the_image");
+    klee_make_symbolic(the_image[i], 10 * sizeof(short), "the_image");
   }
+
+  klee_make_symbolic(&high, sizeof(high), "high");
+  klee_make_symbolic(&bits_per_pixel, sizeof(bits_per_pixel), "bits_per_pixel");
+  klee_make_symbolic(&threshold, sizeof(threshold), "threshold");
 
   detect_edges(the_image, out_image, detect_type, threshold, high, length, width, bits_per_pixel);
 
