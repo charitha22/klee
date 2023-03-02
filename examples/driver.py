@@ -15,14 +15,14 @@ test_names = ['false_positive', 'erosion', 'dilation', 'detect_edges']
 
 config = {
   ## CHANGE THESE FOR YOUR SPECIFIC BUILD SYSTEM
-  'KLEE_BUILD_DIR': "/home/shay/a/rgangar/PLCL/klee/build",
-  'LLVM_BUILD_DIR': "/home/shay/a/rgangar/PLCL/llvm-project-rocm/build_cfmse_install",
+  'KLEE_BUILD_DIR': os.environ['KLEE_BUILD_DIR'],
+  'LLVM_BUILD_DIR': os.environ['LLVM_BUILD_DIR'],
   ## SETTINGS BELOW CAN BE LEFT UNCHANGED
   'CLANG': lambda: config['LLVM_BUILD_DIR'] + "/bin/clang",
   'OPT': lambda: config['LLVM_BUILD_DIR'] + "/bin/opt",
   'CFMSE_FLAGS': "--enable-new-pm -mem2reg -S",
   'KLEE_INCLUDE': lambda: config['KLEE_BUILD_DIR'] + "/../include",
-  'CLANG_FLAGS': lambda: "-I " + config['KLEE_INCLUDE']() + " -emit-llvm -S -Xclang -disable-O0-optnone",
+  'CLANG_FLAGS': lambda: "-I " + config['KLEE_INCLUDE']() + " -emit-llvm -S -Xclang -disable-O0-optnone -g",
   'KLEE_NOCFM_OPTIONS': "--max-memory=51200 --max-time=1h --only-output-states-covering-new --write-cov",
   'KLEE_CFM_OPTIONS': lambda: config['KLEE_NOCFM_OPTIONS'] + " --klee-cfmse",
   'KLEE_BIN': lambda: config['KLEE_BUILD_DIR'] + "/bin/klee"
