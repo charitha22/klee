@@ -123,6 +123,10 @@ cl::opt<bool> KLEE_CFMSE("klee-cfmse", cl::desc("Enable CFMSE Pass (default=fals
 cl::opt<bool> KLEE_ForceCFMSE("klee-force-cfmse",
                        cl::desc("Force CFMSE on all branches"),
                        cl::init(false), cl::cat(ModuleCat));
+
+cl::opt<std::string> KLEE_CFMSE_DontTouch("klee-cfmse-dont-touch-locs",
+                             cl::desc("Don't run CFMSE on locations specified by this JSON file"),
+                             cl::init(""), cl::cat(ModuleCat));
 } // namespace
 
 /***/
@@ -350,6 +354,9 @@ void KModule::optimiseAndPrepare(
     cfmseOptions.OnlyInLoops = true;
     cfmseOptions.OnlyMergeDiamond = true;
     cfmseOptions.OnlySymbolicBranches = true;
+    // don't run CFMSE on locations specified by JSON file
+    if (KLEE_CFMSE_DontTouch.size())
+      cfmseOptions.setDontTouchLocs(KLEE_CFMSE_DontTouch);
 
     if (KLEE_ForceCFMSE){
       cfmseOptions.OnlyInLoops = false;
@@ -360,10 +367,10 @@ void KModule::optimiseAndPrepare(
     modulePassManager.run(*module, moduleAnalysisManager);
   }
 
-  std::string error;
-  std::unique_ptr<llvm::raw_fd_ostream> os(
-      klee_open_output_file("before_int.bc", error));
-  WriteBitcodeToFile(*module, *os);
+  // std::string error;
+  // std::unique_ptr<llvm::raw_fd_ostream> os(
+  //     klee_open_output_file("before_int.bc", error));
+  // WriteBitcodeToFile(*module, *os);
 }
 
 void KModule::manifest(InterpreterHandler *ih, bool forceSourceOutput) {
