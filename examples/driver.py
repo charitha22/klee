@@ -1,11 +1,7 @@
-import subprocess
-import os
-import re
-import time
+#!/usr/bin/python3
+import subprocess, os, re, time, multiprocessing, psutil
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-import multiprocessing
-import psutil
 from queue import Queue
 
 DEBUG = False
