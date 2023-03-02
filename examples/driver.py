@@ -25,7 +25,8 @@ config = {
   'CLANG_FLAGS': lambda: "-I " + config['KLEE_INCLUDE']() + " -emit-llvm -S -Xclang -disable-O0-optnone -g",
   'KLEE_NOCFM_OPTIONS': "--max-memory=51200 --max-time=1h --only-output-states-covering-new --write-cov",
   'KLEE_CFM_OPTIONS': lambda: config['KLEE_NOCFM_OPTIONS'] + " --klee-cfmse",
-  'KLEE_BIN': lambda: config['KLEE_BUILD_DIR'] + "/bin/klee"
+  'KLEE_BIN': lambda: config['KLEE_BUILD_DIR'] + "/bin/klee",
+  'KTEST_BIN': lambda: config['KLEE_BUILD_DIR'] + "/bin/ktest-tool"
 }
 
 def analyzeErroringTest(ktest_path, test_directory, testfile_prefix):
@@ -33,7 +34,7 @@ def analyzeErroringTest(ktest_path, test_directory, testfile_prefix):
   print("Test Directory:", test_directory)
   print("Testfile Prefix:", testfile_prefix)
   if DEBUG:
-    subprocess.run(['ktest-tool', ktest_path]) ## outputs failing test inputs
+    subprocess.run([config['KTEST_BIN'](), ktest_path]) ## outputs failing test inputs
   
   command = config['KLEE_BIN']() + " --replay-ktest-file=" + ktest_path + " " + test_directory + testfile_prefix + ".ll"
   if DEBUG:
