@@ -1,0 +1,52 @@
+version: 1
+creator: klee
+pid: 123772
+cmd: ./false_positive_masking_bug/false_positive_masking_bug.ll
+
+
+positions: instr line
+event: Icov : CoveredInstructions
+event: Forks : Forks
+event: Ireal : InstructionRealTimes
+event: Itime : InstructionTimes
+event: I : Instructions
+event: UCdist : MinDistToUncovered
+event: Rtime : ResolveTime
+event: States : States
+event: Iuncov : UncoveredInstructions
+event: Q : Queries
+event: Qiv : QueriesInvalid
+event: Qv : QueriesValid
+event: Qtime : QueryTime
+events: Icov Forks Ireal Itime I UCdist Rtime States Iuncov Q Qiv Qv Qtime 
+ob=assembly.ll
+fl=./false_positive_masking_bug/false_positive_masking_bug.c
+fn=main
+12 4 1 0 0 0 1 20 0 0 0 0 0 0 0 
+13 4 1 0 0 0 1 19 0 0 0 0 0 0 0 
+14 4 1 0 0 0 1 18 0 0 0 0 0 0 0 
+15 9 1 0 0 0 1 17 0 0 0 0 0 0 0 
+16 9 1 0 0 0 1 16 0 0 0 0 0 0 0 
+17 4 1 0 0 0 1 14 0 0 0 0 0 0 0 
+18 11 1 0 0 0 1 13 0 0 0 0 0 0 0 
+21 0 1 0 0 0 11 12 0 0 0 0 0 0 0 
+22 11 1 0 0 0 11 11 0 0 0 0 0 0 0 
+23 11 1 0 0 0 11 10 0 0 0 0 0 0 0 
+26 12 1 0 0 0 10 9 0 0 0 0 0 0 0 
+27 12 1 0 0 0 10 8 0 0 0 0 0 0 0 
+28 12 1 1 0 0 10 7 0 0 0 2 2 0 4528 
+31 13 1 0 0 0 10 20 0 0 0 0 0 0 0 
+32 13 1 0 0 0 10 19 0 0 0 0 0 0 0 
+33 13 1 0 0 0 10 18 0 0 0 0 0 0 0 
+34 13 1 0 0 0 10 17 0 0 0 0 0 0 0 
+35 14 1 0 0 0 10 16 0 0 0 0 0 0 0 
+38 15 1 0 0 0 1 6 0 0 0 0 0 0 0 
+39 16 1 0 0 0 1 5 0 0 0 0 0 0 0 
+40 16 1 0 0 0 1 4 0 0 0 0 0 0 0 
+41 16 1 0 0 0 1 3 0 0 0 0 0 0 0 
+42 16 1 0 0 0 1 2 0 0 0 0 0 0 0 
+43 4 0 0 0 0 0 1 0 0 1 0 0 0 0 
+46 0 1 0 0 0 10 15 0 0 0 0 0 0 0 
+47 11 1 0 0 0 10 14 0 0 0 0 0 0 0 
+48 11 1 0 0 0 10 13 0 0 0 0 0 0 0 
+51 21 1 0 0 0 1 0 0 0 0 0 0 0 0 

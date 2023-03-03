@@ -1,0 +1,3 @@
+KLEE: Using STP solver backend
+KLEE: ERROR: ./false_positive_masking_bug/false_positive_masking_bug.c:13: memory error: out of bound pointer
+KLEE: NOTE: now ignoring this error at this location

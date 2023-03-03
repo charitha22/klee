@@ -1,0 +1,19 @@
+Error: memory error: out of bound pointer
+File: ./false_positive_masking_bug/false_positive_masking_bug.c
+Line: 13
+assembly.ll line: 45
+State: 2
+Stack: 
+	#000000045 in main () at ./false_positive_masking_bug/false_positive_masking_bug.c:13
+Info: 
+	address: (Add w64 94791263263296
+          (Mul w64 4
+                   (SExt w64 (Add w32 1
+                                      (Select w32 (Slt (ReadLSB w32 0 y)
+                                                       10)
+                                                  8
+                                                  9)))))
+	example: 94791263263336
+	range: [94791263263336, 94791263263336]
+	next: object at 94791263043896 of size 2
+		MO9[2] allocated at global:.str
