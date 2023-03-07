@@ -7,6 +7,6 @@
 [submodule "benchmarks/numal"]
 	path = benchmarks/numal
 	url = git@github.com:JeffBezanson/numal.git
-[submodule "benchmarks/chopper"]
-	path = benchmarks/chopper
-	url = git@github.com:davidtr1037/chopper.git
+[submodule "benchmarks/chopper-experiments"]
+	path = benchmarks/chopper-experiments
+	url = git@github.com:andreamattavelli/chopper-experiments.git
