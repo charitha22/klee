@@ -6,11 +6,8 @@ from multiprocessing import Queue
 
 DEBUG = False
 
-test_dirs = ['./false_positive/', './false_positive_masking_bug/', './erosion/', './dilation/', './detect_edges/']
-test_names = ['false_positive', 'false_positive_masking_bug','erosion', 'dilation', 'detect_edges']
-
-# test_dirs = ['./false_positive/']
-# test_names = ['false_positive']
+test_dirs = ['./bitonic_sort/']
+test_names = ['bitonic_sort']
 
 config = {
   ## CHANGE THESE FOR YOUR SPECIFIC BUILD SYSTEM
