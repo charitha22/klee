@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
   n = 8;
   // allocate space and read all the numbers
   arr = (int *)malloc(n * sizeof(int));
-  klee_make_symbolic((void*)arr, n * sizeof(int), "arr");
+  klee_make_symbolic((int *)arr, n * sizeof(int), "arr");
   
   // for (i = 0; i < n; i++) {
   //   arr[i] = n - i;
