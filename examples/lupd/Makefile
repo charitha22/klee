@@ -1,7 +1,7 @@
 include ../makefile.in
 
-file_name=lupd
-function_to_analzye_in_cfg=lud
+file_name=lup
+function_to_analzye_in_cfg=lup
 
 all: $(file_name).c
 	${CLANG} ${CLANG_FLAGS} $(file_name).c
