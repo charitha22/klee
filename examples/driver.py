@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import subprocess, os, re, time, multiprocessing, psutil, json
+import subprocess, os, re, time, multiprocessing, psutil, json, signal, sys
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from multiprocessing import Queue
@@ -23,8 +23,24 @@ config = {
   'KLEE_CFM_OPTIONS': lambda: config['KLEE_NOCFM_OPTIONS'] + " -klee-cfmse",
   'KLEE_BIN': lambda: config['KLEE_BUILD_DIR'] + "/bin/klee",
   'KTEST_BIN': lambda: config['KLEE_BUILD_DIR'] + "/bin/ktest-tool",
-  'JSON_FILE_NAME': "./klee_cfmse_ignore.json"
+  'JSON_FILE_NAME': "./klee_cfmse_ignore.json",
+  'EVENTLOG_FILE_NAME': "./driver_event_log.log"
 }
+
+# # Custom KLEE event log LEVEL
+# logging.addLevelName(25, "KLEE")
+# def klee_log_event(self, message, *args, **kwargs):
+#     if self.isEnabledFor(25):
+#         self._log(25, message, args, **kwargs)
+# logging.Logger.klee = klee_log_event
+
+# # event logger definitions
+# event_logger = logging.getLogger(__name__)
+# event_logger.setLevel(logging.INFO)
+# logger_handler = logging.FileHandler(config["EVENTLOG_FILE_NAME"])
+# logger_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# logger_handler.setFormatter(logger_formatter)
+# event_logger.addHandler(logger_handler)
 
 def getErrorLocationInformation(ktest_err_path):
   with open(ktest_err_path, "r") as f:
@@ -56,12 +72,12 @@ def getErrorLocationInformation(ktest_err_path):
   
   return (file_name, function_name, line_number)
 
-def analyzeErroringTest(false_positive_objects_queue, ktest_err_path, ktest_path, test_directory, testfile_prefix):
-      processID = os.getpid()
+def analyzeErroringTest(false_positive_objects_queue, execution_process_start_time, ktest_err_path, ktest_path, test_directory, testfile_prefix):
       error_location_data = getErrorLocationInformation(ktest_err_path) ## acquires the line number and function name of erroring test if exists
-      print("Analyzing Erroring Test:", ktest_path)
-      print("Test Directory:", test_directory)
-      print("Testfile Prefix:", testfile_prefix)
+      if DEBUG:
+        print("Analyzing Erroring Test:", ktest_path)
+        print("Test Directory:", test_directory)
+        print("Testfile Prefix:", testfile_prefix)
       if DEBUG:
         subprocess.run([config['KTEST_BIN'](), ktest_path]) ## outputs failing test inputs
       
@@ -81,6 +97,7 @@ def analyzeErroringTest(false_positive_objects_queue, ktest_err_path, ktest_path
         
         if b'KLEE: ERROR' in output:
           print("\033[1;31m",end ="")
+          print("KLEE: ERROR: In replaying erroring test!")
           print(output_str, end ="")
           print("\033[0m")
           
@@ -92,6 +109,10 @@ def analyzeErroringTest(false_positive_objects_queue, ktest_err_path, ktest_path
             line_number = error_match.group(2)
             if (file_name == error_location_data[0]) and (int(line_number) == int(error_location_data[2])):
               error_detected = True
+              error_time = time.time() - execution_process_start_time
+              print("\033[1;31m",end ="")
+              print("Error found in seconds:", error_time, end="")
+              print("\033[0m")
             else:
               error_detected = False
         # If there's no more output, break the loop
@@ -111,18 +132,20 @@ def analyzeErroringTest(false_positive_objects_queue, ktest_err_path, ktest_path
         print("\033[0m")
   
 class TestDirectoryHandler(FileSystemEventHandler):
-    def __init__(self, process_queue, false_positive_objects_queue):
+    def __init__(self, process_queue, false_positive_objects_queue, execution_process_start_time):
       super().__init__
       self.main_test_output_directory = ""
       self.process_queue = process_queue
       self.false_positive_objects_queue = false_positive_objects_queue
+      self.execution_process_start_time = execution_process_start_time
         
     def on_any_event(self, event):
         if event.event_type == 'modified':
             if(".err" in event.src_path): # if an erroring test case has been made
               test_output_directory = os.path.dirname(event.src_path)
               if(self.main_test_output_directory == "" or self.main_test_output_directory == test_output_directory):
-                print(f"Erroring Test is: {event.src_path}")
+                if(DEBUG):
+                  print(f"Erroring Test is: {event.src_path}")
               match = re.search(r"test\d{6}", event.src_path)
               if match:
                 test_number = match.group(0)
@@ -133,12 +156,81 @@ class TestDirectoryHandler(FileSystemEventHandler):
                 
                 ## analyze if error is a false positive
                 if(self.main_test_output_directory == "" or self.main_test_output_directory == test_output_directory):
-                  new_process = multiprocessing.Process(target=analyzeErroringTest, args=(self.false_positive_objects_queue, ktest_err_path, test_output_directory + "/" + test_number + ".ktest", test_directory, testname_prefix))
+                  new_process = multiprocessing.Process(target=analyzeErroringTest, args=(self.false_positive_objects_queue, self.execution_process_start_time, ktest_err_path, test_output_directory + "/" + test_number + ".ktest", test_directory, testname_prefix))
                   new_process.start() ## run false positive error analysis on different process
                   self.process_queue.put(new_process.pid)
                   self.main_test_output_directory = test_output_directory
               else:
                 print("No match found")
+  
+
+def executeKleeWithoutTransformation(ll_file, test_dir, process_start_time):
+  print("\033[1;35m", end = "")
+  print("Executing KLEE without Trasnformation for test ->", test_dir, end ="")
+  print("\033[0m")
+  command = config['KLEE_BIN']() + " " + config['KLEE_NOCFM_OPTIONS'] + " --write-no-tests " + ll_file
+  
+  if DEBUG:
+    print(command)
+    
+  ## start the process
+  process = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
+  
+  while True:
+    # Read a line from the subprocess's standard output
+    output = process.stderr.readline()
+    output_str = output.decode().strip()
+    
+    if(DEBUG):
+      print(output_str)
+    
+    if DEBUG:
+      if b'KLEE: WARNING' in output:
+        print("\033[1;35m", end ="")
+        print(output_str, end ="")
+        print("\033[0m")
+    
+    if b'KLEE: ERROR' in output:
+      error_time = time.time() - process_start_time
+      print("\033[1;31m",end ="")
+      print("KLEE: ERROR: In non-transformed KLEE execution!")
+      print(output_str, end ="")
+      print("\nError found in seconds:", error_time, end="")
+      print("\033[0m")
+    
+    if DEBUG:
+      if b'KLEE: done:' in output:
+        print("\033[1;32m",end ="")
+        print(output_str, end ="")
+        print("\033[0m")
+
+    # If there's no more output, break the loop
+    if output == b'' and process.poll() is not None:
+      break
+
+  # Get the subprocess's return code
+  return_code = process.poll()
+
+  # Print the return code
+  if(return_code == 0):
+    print("\033[1;32mSymbolic execution WITHOUT transformation finished successfully for test ->", test_dir, end ="")
+    print("\033[0m")
+  else:
+    print("\033[1;31mSymbolic execution WITHOUT transform failed for test ->", test_dir, end ="")
+    print("\033[0m")
+  
+
+def keyboard_exit_handler(signal, frame):
+  print("\033[1;31m", end ="")
+  print("Keyboard interrupt detected, killing all KLEE processes!" ,end ="")
+  print("\033[0m")
+  
+  command = 'ps -ef | grep klee | awk \'{print $2}\' | xargs kill 2>/dev/null'
+  subprocess.run(command, shell=True)
+  sys.exit(0)
+
+# Register the signal handler for SIGINT signal
+signal.signal(signal.SIGINT, keyboard_exit_handler)
 
 if __name__ == "__main__":
   
@@ -153,6 +245,8 @@ if __name__ == "__main__":
     print("\033[0m")
     # Clean test directory
     subprocess.run(['make', 'clean', '-C', test_dir, '--no-print-directory'])
+    
+    process_start_time = time.time()
     
     # Make .ll file
     command = config['CLANG']() + " " \
@@ -171,8 +265,13 @@ if __name__ == "__main__":
       print(command)
     subprocess.run(command, shell=True)
     
+    klee_without_transform_process = multiprocessing.Process(target=executeKleeWithoutTransformation, args=(ll_file, test_dir, process_start_time))
+    klee_without_transform_process.start()
+    
     re_execute_klee_with_transformation = True
     false_positives_information = {}
+    execution_process_start_time = None
+    initial_run = True
     while re_execute_klee_with_transformation:
       #Execute KLEE with transformation on program
       if not false_positives_information: ## no false positives so far
@@ -188,7 +287,10 @@ if __name__ == "__main__":
       false_positive_objects_queue = Queue()
       observer = Observer()
       path = test_dir
-      event_handler = TestDirectoryHandler(process_queue, false_positive_objects_queue)
+      if initial_run:
+        execution_process_start_time = time.time()
+        initial_run = False
+      event_handler = TestDirectoryHandler(process_queue, false_positive_objects_queue, execution_process_start_time)
       observer.schedule(event_handler, path, recursive=True)
       observer.start()
       
@@ -209,7 +311,9 @@ if __name__ == "__main__":
             print("\033[0m")
         
         if b'KLEE: ERROR' in output:
+          error_time = time.time() - execution_process_start_time
           print("\033[1;31m",end ="")
+          print("KLEE: ERROR: In transformed KLEE execution!")
           print(output_str, end ="")
           print("\033[0m")
         
@@ -242,6 +346,7 @@ if __name__ == "__main__":
         except:
           pass
       
+      ## checks for any new false positives found from false positive error analysis
       new_false_positives = []
       while not false_positive_objects_queue.empty():
         false_positive_object = false_positive_objects_queue.get()
@@ -249,6 +354,7 @@ if __name__ == "__main__":
           print(false_positive_object)
         if(false_positive_object[1] == True): # if erroring test is a false positive
           new_false_positives.append(false_positive_object)
+      
       observer.stop()
       observer.join()
       
@@ -293,6 +399,12 @@ if __name__ == "__main__":
         print("KLEE re-executing to remove false positves for test ->", test_dir, end ="")
         print("\nUsing false positive locations information ->", false_positives_information, end="")
         print("\033[0m")
+
+    if klee_without_transform_process.is_alive():
+      print("\033[1;35m", end = "")
+      print("Waiting for KLEE without Transformation to finish execution for test ->", test_dir, end ="")
+      print("\033[0m")
+    klee_without_transform_process.join()
         
 
   
