@@ -1,3 +1,12 @@
 [submodule "benchmarks/chopper-experiments"]
 	path = benchmarks/chopper-experiments
 	url = git@github.com:charitha22/chopper-experiments.git
+[submodule "benchmarks/ansibench"]
+	path = benchmarks/ansibench
+	url = git@github.com:charitha22/ansibench.git
+[submodule "benchmarks/anant"]
+	path = benchmarks/anant
+	url = git@github.com:charitha22/anant.git
+[submodule "benchmarks/numal"]
+	path = benchmarks/numal
+	url = git@github.com:charitha22/numal.git
