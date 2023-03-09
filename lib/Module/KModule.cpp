@@ -127,6 +127,11 @@ cl::opt<bool> KLEE_ForceCFMSE("klee-force-cfmse",
 cl::opt<std::string> KLEE_CFMSE_DontTouch("klee-cfmse-dont-touch-locs",
                              cl::desc("Don't run CFMSE on locations specified by this JSON file"),
                              cl::init(""), cl::cat(ModuleCat));
+
+cl::opt<bool> KLEE_CFMSE_RunOnlyOnLoops("klee-cfmse-run-only-on-loops",
+                             cl::desc("Run CFMSE only inside loops (default=true)"),
+                             cl::init(true), cl::cat(ModuleCat));
+
 } // namespace
 
 /***/
@@ -351,7 +356,7 @@ void KModule::optimiseAndPrepare(
     // options for cfmse
     CFMSEOptions cfmseOptions;
     cfmseOptions.IsExternalFunction = isExternalFunction;
-    cfmseOptions.OnlyInLoops = true;
+    cfmseOptions.OnlyInLoops = KLEE_CFMSE_RunOnlyOnLoops;
     cfmseOptions.OnlyMergeDiamond = true;
     cfmseOptions.OnlySymbolicBranches = true;
     // don't run CFMSE on locations specified by JSON file

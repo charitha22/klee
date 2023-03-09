@@ -100,7 +100,7 @@ static const std::unordered_set<std::string> ExternalFuncs{
     "memcpy",
     "memset",
     "strrchr",
-    "__klee_posix_wrapped_main",
+    // "__klee_posix_wrapped_main",
     "klee_init_fds",
     "__create_new_dfile",
     "__sym_uint32",
