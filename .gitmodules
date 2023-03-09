@@ -1,0 +1,3 @@
+[submodule "benchmarks/chopper-experiments"]
+	path = benchmarks/chopper-experiments
+	url = git@github.com:charitha22/chopper-experiments.git
