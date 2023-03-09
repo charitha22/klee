@@ -37,4 +37,5 @@ autom4te.cache/
 # examples dir setup
 examples/setup_env.sh
 
-
+benchmarks/diffutils-3.6/obj-llvm
+benchmarks/setenv.h
