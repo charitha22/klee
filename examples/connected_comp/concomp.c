@@ -38,5 +38,6 @@ int main() {
     int *cc = (int*)malloc(n*sizeof(int));
     klee_make_symbolic(cc, n*sizeof(int), "cc");
     int numcc = connected_comp(graph, cc, n);
+    printf("number of connected components: %d\n", numcc);
     return 0;
 }
