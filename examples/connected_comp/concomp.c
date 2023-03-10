@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <klee/klee.h>
+
+int connected_comp(bool *graph, int n) {
+    int *cc = (int*)malloc(n * sizeof(int));
+    for (int s = 0; s < n; s++) cc[s] = s;
+    bool changed = true;
+    // count different connected components
+    while (changed) {
+        changed = false;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (graph[i*n+j]) {
+                    if (cc[i] > cc[j]){
+                        cc[i] = cc[j];
+                        changed = true;
+                    }
+                }
+            }
+        }
+    }
+    // initialize histogram
+    int *hh = (int*)malloc(n * sizeof(int));
+    for (int s = 0; s < n; s++) hh[s] = 0;
+    // update histogram
+    for (int s = 0; s < n; s++) hh[cc[s]]++;
+    // count non-zero histogram entries
+    int numcc = 0;
+    for (int s = 0; s < n; s++) if (hh[s] > 0) numcc++;
+    return numcc;
+}
+
+int main() {
+    int n = 3;
+    bool *graph = (bool*)malloc(n*n*sizeof(bool));
+    klee_make_symbolic(graph, n*n*sizeof(bool), "graph");
+    int numcc = connected_comp(graph, n);
+    return 0;
+}
