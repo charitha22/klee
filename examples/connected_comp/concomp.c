@@ -3,8 +3,7 @@
 #include <stdbool.h>
 #include <klee/klee.h>
 
-int connected_comp(bool *graph, int n) {
-    int *cc = (int*)malloc(n * sizeof(int));
+int connected_comp(bool *graph, int * cc, int n) {
     for (int s = 0; s < n; s++) cc[s] = s;
     bool changed = true;
     // count different connected components
@@ -36,6 +35,8 @@ int main() {
     int n = 3;
     bool *graph = (bool*)malloc(n*n*sizeof(bool));
     klee_make_symbolic(graph, n*n*sizeof(bool), "graph");
-    int numcc = connected_comp(graph, n);
+    int *cc = (int*)malloc(n*sizeof(int));
+    klee_make_symbolic(cc, n*sizeof(int), "cc");
+    int numcc = connected_comp(graph, cc, n);
     return 0;
 }
