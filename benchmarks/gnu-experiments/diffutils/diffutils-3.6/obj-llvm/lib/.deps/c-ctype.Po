@@ -1,0 +1,8 @@
+c-ctype.o: ../../lib/c-ctype.c config.h ../../lib/c-ctype.h \
+  /home/ksundar/Dev/llvm-project/dist/lib/clang/14.0.0/include/stdbool.h
+
+config.h:
+
+../../lib/c-ctype.h:
+
+/home/ksundar/Dev/llvm-project/dist/lib/clang/14.0.0/include/stdbool.h:
