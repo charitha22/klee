@@ -4,10 +4,10 @@
 #include <klee/klee.h>
 
 void floyd_warshall(int *dist, int n) {
-    int i, j, k;
-    for (k = 0; k < n; k++) {
-        for (i = 0; i < n; i++) {
-        for (j = 0; j < n; j++) {
+    for(int v = 0; v < n; v++) dist[v *n + v] = 0;
+    for (int k = 0; k < n; k++) {
+        for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
             int d = dist[i * n + k] + dist[k * n + j];
             if (d < dist[i * n + j]) {
             dist[i * n + j] = d;
