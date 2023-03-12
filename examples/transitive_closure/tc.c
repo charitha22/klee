@@ -9,7 +9,7 @@ void transitive_closure(bool *graph, int n) {
     for (int k = 0; k < n; k++) {
         for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            int d = graph[i * n + k] & graph[k * n + j];
+            bool d = graph[i * n + k] & graph[k * n + j];
             if (d | graph[i * n + j]) {
                 graph[i * n + j] = d;
             }
