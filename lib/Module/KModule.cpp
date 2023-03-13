@@ -132,6 +132,10 @@ cl::opt<bool> KLEE_CFMSE_RunOnlyOnLoops("klee-cfmse-run-only-on-loops",
                              cl::desc("Run CFMSE only inside loops (default=true)"),
                              cl::init(true), cl::cat(ModuleCat));
 
+cl::opt<bool> KLEE_CFMSE_MarkAllLoadsSymbolic("klee-cfmse-loads-symbolic",
+                             cl::desc("Mark all loads as symbolic (default=false)"),
+                             cl::init(false), cl::cat(ModuleCat));
+
 } // namespace
 
 /***/
@@ -359,6 +363,11 @@ void KModule::optimiseAndPrepare(
     cfmseOptions.OnlyInLoops = KLEE_CFMSE_RunOnlyOnLoops;
     cfmseOptions.OnlyMergeDiamond = true;
     cfmseOptions.OnlySymbolicBranches = true;
+
+    // mark all loads as symbolic for better SVA
+    if (KLEE_CFMSE_MarkAllLoadsSymbolic)
+      cfmseOptions.MarkAllLoadsSymbolic = true;
+
     // don't run CFMSE on locations specified by JSON file
     if (KLEE_CFMSE_DontTouch.size())
       cfmseOptions.setDontTouchLocs(KLEE_CFMSE_DontTouch);
