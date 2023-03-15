@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <klee/klee.h>
 
 void swap(unsigned int* a, unsigned int* b){
@@ -14,6 +15,9 @@ void flag(unsigned int *arr, unsigned int N){
     unsigned int k = N-1;
 
     while (j <= k) {
+        #ifdef MERGE
+        klee_open_merge();
+        #endif
         if (arr[j] == 0){
             swap(arr+i, arr+j);           
             i++;
@@ -24,17 +28,26 @@ void flag(unsigned int *arr, unsigned int N){
         } else {
             j++;
         }
+        #ifdef MERGE
+        klee_close_merge();
+        #endif
     }
 
 }
 
 int main() {
-    unsigned int arr[10];
-
-    klee_make_symbolic(&arr, sizeof(arr), "arr");
-    for(int i = 0; i < 10; i++)
+    unsigned int N = 10;
+    unsigned int *arr = (unsigned int*)malloc(N*sizeof(unsigned int));
+    klee_make_symbolic(arr, N*sizeof(unsigned int), "arr");
+    
+    klee_assume(arr[0] == 0);
+    klee_assume(arr[1] == 1);
+    klee_assume(arr[2] == 2);
+    for(unsigned int i = 3; i < N; i++) {
         klee_assume((arr[i] == 0) || (arr[i] == 1) || arr[i] == 2);
-    flag(arr, 10);
+    }
+    
+    flag(arr, N);
     
     return 0;
 }
