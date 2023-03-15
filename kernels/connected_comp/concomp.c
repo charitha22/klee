@@ -38,7 +38,7 @@ int connected_comp(bool *graph, int * cc, int n) {
 }
 
 int main() {
-    int n = 3;
+    int n = SIZE;
     bool *graph = (bool*)malloc(n*n*sizeof(bool));
     klee_make_symbolic(graph, n*n*sizeof(bool), "graph");
     int *cc = (int*)malloc(n*sizeof(int));
