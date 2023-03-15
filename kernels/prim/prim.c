@@ -10,10 +10,16 @@ int minKey(int* key, bool* mstSet, int n)
     int min_index;
  
     for (int v = 0; v < n; v++) {
+        #ifdef MERGE
+        klee_open_merge();
+        #endif
         if (mstSet[v] == false && key[v] < min) {
             min = key[v]; 
             min_index = v;
         }
+        #ifdef MERGE
+        klee_close_merge();
+        #endif
     }
  
     return min_index;
@@ -33,12 +39,19 @@ void primMST(int *graph, int *parent, int *key, bool* mstSet, int n)
         int u = minKey(key, mstSet, n);
         mstSet[u] = true;
  
-        for (int v = 0; v < n; v++)
+        for (int v = 0; v < n; v++) {
+            #ifdef MERGE
+            klee_open_merge();
+            #endif
             if (graph[u * n + v] && mstSet[v] == false
                 && graph[u * n + v] < key[v]) {
                 parent[v] = u; 
                 key[v] = graph[u * n + v];
             }
+            #ifdef MERGE
+            klee_close_merge();
+            #endif
+        }
     }
  
 }
