@@ -1,23 +1,30 @@
 include ../makefile.in
 
 file_name=toupper
-function_to_analzye_in_cfg=foo
+function_to_analzye_in_cfg=toupper
 
 all: $(file_name).c
 	${CLANG} ${CLANG_FLAGS} $(file_name).c
 	${OPT} -f ${CFMSE_FLAGS} -o $(file_name).ll < $(file_name).ll
 
-hello: $(file_name).ll
-	~/PLCL/llvm-project-rocm/build/bin/opt -enable-new-pm=0 -load ~/PLCL/llvm-project-rocm/build/lib/LLVMHello.so -hello < $(file_name).ll > /dev/null
+merge: $(file_name).c
+	${CLANG} ${CLANG_FLAGS} -DMERGE $(file_name).c
+	${OPT} -f ${CFMSE_FLAGS} -o $(file_name).ll < $(file_name).ll
 
 cfg: $(file_name).ll
 	${OPT} -dot-cfg $(file_name).ll
 	dot -Tsvg .$(function_to_analzye_in_cfg).dot -o $(function_to_analzye_in_cfg).svg
 
-kleeNOCFM: $(file_name).ll
-	$(KLEE_BIN) --only-output-states-covering-new --write-cov $(file_name).ll
-
 klee: $(file_name).ll
-	$(KLEE_BIN) --klee-cfmse --only-output-states-covering-new --write-cov $(file_name).ll
+	$(KLEE_BIN) $(KLEE_NOCFM_OPTIONS) $(file_name).ll
+
+klee_sm: $(file_name).ll
+	$(KLEE_BIN) -use-merge $(KLEE_NOCFM_OPTIONS) $(file_name).ll
+
+klee_cfm: $(file_name).ll
+	$(KLEE_BIN) $(KLEE_CFM_OPTIONS) $(file_name).ll
+
+klee_cfmsm: $(file_name).ll
+	$(KLEE_BIN) -use-merge $(KLEE_CFM_OPTIONS) $(file_name).ll
 
 include ../makefile.clean
