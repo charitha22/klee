@@ -1,9 +1,11 @@
  /* masks for sobel operator */
 
-#define SOBEL                  3
-#include "klee/klee.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
+#include "klee/klee.h"
+
+#define SOBEL 3
 
 short sobel_mask_0[3][3] =  {
        { 1,  2,  1},
@@ -373,27 +375,30 @@ int main() {
 
   int detect_type = SOBEL;
   int threshold;
-  long length;
-  long width;
   int high;
   int bits_per_pixel;
+  long length = SIZE;
+  long width = SIZE;
+  
   short **the_image;
   short **out_image;
 
-  klee_make_symbolic(&length, sizeof(long), "length");
-  klee_make_symbolic(&width, sizeof(long), "width");
+  // klee_make_symbolic(&length, sizeof(long), "length");
+  // klee_make_symbolic(&width, sizeof(long), "width");
 
-  klee_assume(0 < length);
-  klee_assume(length < 10);
+  // klee_assume(0 < length);
+  // klee_assume(length < 10);
 
-  klee_assume(0 < width);
-  klee_assume(width < 10);
+  // klee_assume(0 < width);
+  // klee_assume(width < 10);
+  assert(0 < length && length < 10);
+  assert(0 < width && width < 10);
 
-  the_image = allocate_image_array(10, 10);
-  out_image = allocate_image_array(10, 10);
+  the_image = allocate_image_array(length, width);
+  out_image = allocate_image_array(length, width);
 
   for (int i = 0; i < length; i++) {
-    klee_make_symbolic(the_image[i], 10 * sizeof(short), "the_image");
+    klee_make_symbolic(the_image[i], width * sizeof(short), "the_image");
   }
 
   klee_make_symbolic(&high, sizeof(high), "high");
