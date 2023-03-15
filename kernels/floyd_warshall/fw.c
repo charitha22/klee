@@ -9,9 +9,15 @@ void floyd_warshall(int *dist, int n) {
         for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             int d = dist[i * n + k] + dist[k * n + j];
+            #ifdef MERGE
+            klee_open_merge();
+            #endif
             if (d < dist[i * n + j]) {
-            dist[i * n + j] = d;
+                dist[i * n + j] = d;
             }
+            #ifdef MERGE
+            klee_close_merge();
+            #endif
         }
         }
     }
