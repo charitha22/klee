@@ -4,11 +4,11 @@ file_name=dilation
 function_to_analzye_in_cfg=dilation
 
 all: $(file_name).c
-	${CLANG} ${CLANG_FLAGS} $(file_name).c
+	${CLANG} ${CLANG_FLAGS} -DSIZE=$(SIZE) $(file_name).c
 	${OPT} -f ${CFMSE_FLAGS} -o $(file_name).ll < $(file_name).ll
 
 merge: $(file_name).c
-	${CLANG} ${CLANG_FLAGS} -DMERGE $(file_name).c
+	${CLANG} ${CLANG_FLAGS} -DSIZE=$(SIZE) -DMERGE $(file_name).c
 	${OPT} -f ${CFMSE_FLAGS} -o $(file_name).ll < $(file_name).ll
 
 cfg: $(file_name).ll

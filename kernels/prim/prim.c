@@ -58,7 +58,7 @@ void primMST(int *graph, int *parent, int *key, bool* mstSet, int n)
 
 int main()
 {
-    int n = 5;
+    int n = SIZE;
     int *graph = (int*)malloc(n*n*sizeof(int));
     int *parent = (int*)malloc(n*sizeof(int));
     int *key = (int*)malloc(n*sizeof(int));

@@ -36,7 +36,7 @@ void flag(unsigned int *arr, unsigned int N){
 }
 
 int main() {
-    unsigned int N = 10;
+    unsigned int N = SIZE;
     unsigned int *arr = (unsigned int*)malloc(N*sizeof(unsigned int));
     klee_make_symbolic(arr, N*sizeof(unsigned int), "arr");
     
