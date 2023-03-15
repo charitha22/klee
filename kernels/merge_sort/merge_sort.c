@@ -5,7 +5,7 @@
 // Merges two subarrays of arr[].
 // First subarray is arr[l..m]
 // Second subarray is arr[m+1..r]
-void merge(int arr[], int l, int m, int r)
+void merge(int *arr, int l, int m, int r)
 {
     int i, j, k;
     int n1 = m - l + 1;
@@ -25,6 +25,9 @@ void merge(int arr[], int l, int m, int r)
     j = 0; // Initial index of second subarray
     k = l; // Initial index of merged subarray
     while (i < n1 && j < n2) {
+        #ifdef MERGE
+        klee_open_merge();
+        #endif
         if (L[i] <= R[j]) {
             arr[k] = L[i];
             i++;
@@ -33,6 +36,9 @@ void merge(int arr[], int l, int m, int r)
             arr[k] = R[j];
             j++;
         }
+        #ifdef MERGE
+        klee_close_merge();
+        #endif
         k++;
     }
  
@@ -55,7 +61,7 @@ void merge(int arr[], int l, int m, int r)
  
 /* l is for left index and r is right index of the
 sub-array of arr to be sorted */
-void mergeSort(int arr[], int l, int r)
+void mergeSort(int *arr, int l, int r)
 {
     if (l < r) {
         // Same as (l+r)/2, but avoids overflow for
@@ -70,30 +76,15 @@ void mergeSort(int arr[], int l, int r)
     }
 }
  
-/* UTILITY FUNCTIONS */
-/* Function to print an array */
-void printArray(int A[], int size)
-{
-    int i;
-    for (i = 0; i < size; i++)
-        printf("%d ", A[i]);
-    printf("\n");
-}
- 
 /* Driver code */
 int main()
 {
-    int arr[5];
-    int arr_size = 5;
+    int n = 5;
+    int *arr = (int*)malloc(n*sizeof(int));
 
-    klee_make_symbolic(&arr, sizeof(arr), "arr");
+    klee_make_symbolic(arr, n*sizeof(int), "arr");
  
-    //printf("Given array is \n");
-    //printArray(arr, arr_size);
+    mergeSort(arr, 0, n - 1);
  
-    mergeSort(arr, 0, arr_size - 1);
- 
-    //printf("\nSorted array is \n");
-    //printArray(arr, arr_size);
     return 0;
 }
