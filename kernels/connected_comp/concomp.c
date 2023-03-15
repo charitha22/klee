@@ -11,12 +11,18 @@ int connected_comp(bool *graph, int * cc, int n) {
         changed = false;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
+                #ifdef MERGE
+                klee_open_merge();
+                #endif
                 if (graph[i*n+j]) {
                     if (cc[i] > cc[j]){
                         cc[i] = cc[j];
                         changed = true;
                     }
                 }
+                #ifdef MERGE
+                klee_close_merge();
+                #endif
             }
         }
     }
@@ -38,6 +44,6 @@ int main() {
     int *cc = (int*)malloc(n*sizeof(int));
     klee_make_symbolic(cc, n*sizeof(int), "cc");
     int numcc = connected_comp(graph, cc, n);
-    printf("number of connected components: %d\n", numcc);
+    //printf("number of connected components: %d\n", numcc);
     return 0;
 }
