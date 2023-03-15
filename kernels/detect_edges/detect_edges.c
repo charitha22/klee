@@ -333,12 +333,18 @@ int perform_convolution(image, out_image,
    if(threshold == 1){
        for(i=0; i<rows; i++){
           for(j=0; j<cols; j++){
+            #ifdef MERGE
+            klee_open_merge();
+            #endif
              if(out_image[i][j] > high){
                   out_image[i][j] = new_hi;
              }
              else{
                   out_image[i][j] = new_low;
              }
+            #ifdef MERGE
+            klee_close_merge();
+            #endif
           }
        }
    }  /* ends if threshold == 1 */
