@@ -3,20 +3,19 @@
 
 void foo(int n1, int n2)
 {
-    //int n1, n2;
-
-    //printf("Enter two positive integers: ");
-    //scanf("%d %d",&n1,&n2);
-
     while(n1!=n2)
     {
+        #ifdef MERGE 
+        klee_open_merge();
+        #endif
         if(n1 > n2)
             n1 -= n2;
         else
             n2 += -n1;
+        #ifdef MERGE
+        klee_close_merge();
+        #endif
     }
-    //printf("GCD = %d",n1);
-
 }
 
 int main() {
