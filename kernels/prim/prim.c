@@ -64,5 +64,12 @@ int main()
     int *key = (int*)malloc(n*sizeof(int));
     bool *mstSet = (bool*)malloc(n*sizeof(bool));
     klee_make_symbolic(graph, n*n*sizeof(int), "graph");
+    
+    for(int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++){
+            klee_assume(graph[i * n + j] >= 0);
+        }
+    }
+
     primMST(graph, parent, key, mstSet, n);
 }
