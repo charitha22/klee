@@ -40,6 +40,9 @@ int erosion(short **the_image, short **out_image, short value, int threshold,
   for (i = 1; i < rows - 1; i++) {
     // if( (i%10) == 0) printf("%3d", i);
     for (j = 1; j < cols - 1; j++) {
+      #ifdef MERGE
+      klee_open_merge();
+      #endif
       if (the_image[i][j] == value) {
         count = 0;
         for (a = -1; a <= 1; a++) {
@@ -54,6 +57,9 @@ int erosion(short **the_image, short **out_image, short value, int threshold,
           out_image[i][j] = 0;
         }
       } /* ends if the_image == value */
+      #ifdef MERGE
+      klee_close_merge();
+      #endif
     }   /* ends loop over j */
   }     /* ends loop over i */
 
