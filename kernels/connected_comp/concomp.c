@@ -45,5 +45,6 @@ int main() {
     klee_make_symbolic(cc, n*sizeof(int), "cc");
     int numcc = connected_comp(graph, cc, n);
     //printf("number of connected components: %d\n", numcc);
+    klee_assert(numcc <= n && numcc >= 0);
     return 0;
 }
