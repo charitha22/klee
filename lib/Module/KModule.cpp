@@ -117,24 +117,28 @@ cl::opt<bool> OptimiseKLEECall("klee-call-optimisation",
                                         "contain KLEE calls (default=true)"),
                                cl::init(true), cl::cat(ModuleCat));
 
-cl::opt<bool> KLEE_CFMSE("klee-cfmse", cl::desc("Enable CFMSE Pass (default=false)"),
-                    cl::init(false), cl::cat(ModuleCat));
+cl::opt<bool> KLEE_CFMSE("klee-cfmse",
+                         cl::desc("Enable CFMSE Pass (default=false)"),
+                         cl::init(false), cl::cat(ModuleCat));
 
 cl::opt<bool> KLEE_ForceCFMSE("klee-force-cfmse",
-                       cl::desc("Force CFMSE on all branches"),
-                       cl::init(false), cl::cat(ModuleCat));
+                              cl::desc("Force CFMSE on all branches"),
+                              cl::init(false), cl::cat(ModuleCat));
 
-cl::opt<std::string> KLEE_CFMSE_DontTouch("klee-cfmse-dont-touch-locs",
-                             cl::desc("Don't run CFMSE on locations specified by this JSON file"),
-                             cl::init(""), cl::cat(ModuleCat));
+cl::opt<std::string> KLEE_CFMSE_DontTouch(
+    "klee-cfmse-dont-touch-locs",
+    cl::desc("Don't run CFMSE on locations specified by this JSON file"),
+    cl::init(""), cl::cat(ModuleCat));
 
-cl::opt<bool> KLEE_CFMSE_RunOnlyOnLoops("klee-cfmse-run-only-on-loops",
-                             cl::desc("Run CFMSE only inside loops (default=true)"),
-                             cl::init(true), cl::cat(ModuleCat));
+cl::opt<bool> KLEE_CFMSE_RunOnlyOnLoops(
+    "klee-cfmse-run-only-on-loops",
+    cl::desc("Run CFMSE only inside loops (default=true)"), cl::init(true),
+    cl::cat(ModuleCat));
 
-cl::opt<bool> KLEE_CFMSE_MarkAllLoadsSymbolic("klee-cfmse-loads-symbolic",
-                             cl::desc("Mark all loads as symbolic (default=false)"),
-                             cl::init(false), cl::cat(ModuleCat));
+cl::opt<bool> KLEE_CFMSE_MarkAllLoadsSymbolic(
+    "klee-cfmse-loads-symbolic",
+    cl::desc("Mark all loads as symbolic (default=false)"), cl::init(false),
+    cl::cat(ModuleCat));
 
 } // namespace
 
@@ -281,9 +285,10 @@ void KModule::instrument(const Interpreter::ModuleOptions &opts) {
 }
 
 // method to filter external functions from being optimised
-static bool isExternalFunction(const std::string funcName) {
+static bool isExternFuncOrFile(const std::string funcName,
+                                   const std::string fileName) {
 #include "ExternalFunctions.h"
-  return ExternalFuncs.count(funcName) > 0;
+  return ExternalFuncs.count(funcName) > 0 || ExternalFiles.count(fileName) > 0;
 }
 
 void KModule::optimiseAndPrepare(
@@ -359,7 +364,7 @@ void KModule::optimiseAndPrepare(
 
     // options for cfmse
     CFMSEOptions cfmseOptions;
-    cfmseOptions.IsExternalFunction = isExternalFunction;
+    cfmseOptions.IsExternFuncOrFile = isExternFuncOrFile;
     cfmseOptions.OnlyInLoops = KLEE_CFMSE_RunOnlyOnLoops;
     cfmseOptions.OnlyMergeDiamond = true;
     cfmseOptions.OnlySymbolicBranches = true;
@@ -372,7 +377,7 @@ void KModule::optimiseAndPrepare(
     if (KLEE_CFMSE_DontTouch.size())
       cfmseOptions.setDontTouchLocs(KLEE_CFMSE_DontTouch);
 
-    if (KLEE_ForceCFMSE){
+    if (KLEE_ForceCFMSE) {
       cfmseOptions.OnlyInLoops = false;
       cfmseOptions.OnlySymbolicBranches = false;
     }
