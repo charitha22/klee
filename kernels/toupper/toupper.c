@@ -61,7 +61,7 @@ void to_upper_final(char *text, int n) {
 }
 
 int main() {
-  int n = 10;
+  int n = SIZE;
   char *text = (char*)malloc(n*sizeof(char));
 
   klee_make_symbolic(text, n*sizeof(char), "text");

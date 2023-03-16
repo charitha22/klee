@@ -24,7 +24,7 @@ void floyd_warshall(int *dist, int n) {
 }
 
 int main() {
-    int n = 3;
+    int n = SIZE;
     int *dist = (int*)malloc(n*n*sizeof(int));
     klee_make_symbolic(dist, n*n*sizeof(int), "dist");
     floyd_warshall(dist, n);

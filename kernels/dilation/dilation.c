@@ -83,9 +83,9 @@ int main() {
 
   int i, j;
   int threshold = 1;
-  long length = 5;
-  long width = 5;
   short value = 1;
+  long length = SIZE;
+  long width = SIZE;
   short **the_image;
   short **out_image;
 
@@ -97,6 +97,8 @@ int main() {
 
   // klee_assume(0 < width);
   // klee_assume(width < 10);
+  assert(0 < length && length < 10);
+  assert(0 < width && width < 10);
 
   the_image = allocate_image_array(length, width);
   out_image = allocate_image_array(length, width);

@@ -60,7 +60,7 @@ void printArray(int *arr, int n) {
 
 int main(int argc, char **argv) {
   int n, *arr, i, s;
-  n = 8;
+  n = SIZE;
   // allocate space and read all the numbers
   arr = (int *)malloc(n * sizeof(int));
   klee_make_symbolic((int *)arr, n * sizeof(int), "arr");
@@ -74,5 +74,4 @@ int main(int argc, char **argv) {
     }
   }
 
-  printArray(arr, n);
 }

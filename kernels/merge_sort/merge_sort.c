@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <klee/klee.h>
  
 // Merges two subarrays of arr[].
@@ -79,7 +80,8 @@ void mergeSort(int *arr, int l, int r)
 /* Driver code */
 int main()
 {
-    int n = 5;
+    int n = SIZE;
+    assert(n > 1);
     int *arr = (int*)malloc(n*sizeof(int));
 
     klee_make_symbolic(arr, n*sizeof(int), "arr");

@@ -85,7 +85,7 @@ int kruskal(edge *edges, int *parent, int *rank, int n)
 }
 
 int main() {
-    int n = 3;
+    int n = SIZE;
     edge *edges = (edge*)malloc(n*sizeof(edge));
     int *parent = (int*)malloc(n*sizeof(int));
     int *rank   = (int*)malloc(n*sizeof(int));
