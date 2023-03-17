@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 short **allocate_image_array(length, width) long length, width;
 {
   int i, j;
@@ -22,62 +21,76 @@ short **allocate_image_array(length, width) long length, width;
   return (the_array);
 }
 
-int dilation(the_image, out_image,
-         value, threshold,
-         rows, cols)
-   int    threshold;
-   short  **the_image,
-          **out_image,
-          value;
-   long   cols, rows;
+int dilation(the_image, out_image, value, threshold, rows, cols) int threshold;
+short **the_image, **out_image, value;
+long cols, rows;
 {
-   int    a, b, count, i, j, k;
-   int    three = 3;
+  int a, b, count, i, j, k;
+  int three = 3;
 
-      /***************************
-      *
-      *   Loop over image array
-      *
-      ****************************/
+  /***************************
+   *
+   *   Loop over image array
+   *
+   ****************************/
 
-   for(i=0; i<rows; i++)
-      for(j=0; j<cols; j++)
-         out_image[i][j] = the_image[i][j];
+  for (i = 0; i < rows; i++)
+    for (j = 0; j < cols; j++)
+      out_image[i][j] = the_image[i][j];
 
-   //printf("\n");
+  // printf("\n");
 
-   for(i=1; i<rows-1; i++){
-      //if( (i%10) == 0) printf("%3d", i);
-      for(j=1; j<cols-1; j++){
-         out_image[i][j] = the_image[i][j];
-         #ifdef MERGE
-         klee_open_merge();
-         #endif
-         if(the_image[i][j] == 0){
-            count = 0;
-            for(a=-1; a<=1; a++){
-                for(b=-1; b<=1; b++){
-                   if(a!=0  &&  b!=0){
-                      if(the_image[i+a][j+b] == value)
-                         count++;
-                   }  /* ends avoid the center pixel */
-                }  /*  ends loop over b */
-            }  /* ends loop over a */
-            if(count > threshold)
-               out_image[i][j] = value;
-         }  /* ends if the_image == 0 */
-         #ifdef MERGE
-         klee_close_merge();
-         #endif
-      }  /* ends loop over j */
-   }  /* ends loop over i */
+  for (i = 1; i < rows - 1; i++) {
+    // if( (i%10) == 0) printf("%3d", i);
+    for (j = 1; j < cols - 1; j++) {
+      out_image[i][j] = the_image[i][j];
+#ifdef MERGE
+      klee_open_merge();
+#endif
+      if (the_image[i][j] == 0) {
+        count = 0;
+        for (a = -1; a <= 1; a++) {
+          for (b = -1; b <= 1; b++) {
+#ifdef MERGE
+            klee_open_merge();
+#endif
+            if (a != 0 && b != 0) {
+#ifdef MERGE
+              klee_open_merge();
+#endif
+              if (the_image[i + a][j + b] == value)
+                count++;
+#ifdef MERGE
+              klee_close_merge();
+#endif
+            } /* ends avoid the center pixel */
+#ifdef MERGE
+            klee_close_merge();
+#endif
+          } /*  ends loop over b */
+        }   /* ends loop over a */
+#ifdef MERGE
+        klee_open_merge();
+#endif
 
-   /*****
-   fix_edges(out_image, three, rows, cols);
-   ***/
+        if (count > threshold)
+          out_image[i][j] = value;
+#ifdef MERGE
+        klee_close_merge();
+#endif
+      } /* ends if the_image == 0 */
+#ifdef MERGE
+      klee_close_merge();
+#endif
+    } /* ends loop over j */
+  }   /* ends loop over i */
 
-return(1);
-}  /* ends dilation */
+  /*****
+  fix_edges(out_image, three, rows, cols);
+  ***/
+
+  return (1);
+} /* ends dilation */
 
 int main() {
 
@@ -97,8 +110,8 @@ int main() {
 
   // klee_assume(0 < width);
   // klee_assume(width < 10);
-  assert(0 < length && length < 10);
-  assert(0 < width && width < 10);
+//   assert(0 < length && length < 10);
+//   assert(0 < width && width < 10);
 
   the_image = allocate_image_array(length, width);
   out_image = allocate_image_array(length, width);
@@ -108,6 +121,14 @@ int main() {
   }
 
   dilation(the_image, out_image, value, threshold, length, width);
+
+  // FIXME : check some condition on out_image
+  for (int i = 0; i < length; i++) {
+    for (int j = 0; j < width; j++) {
+      // printf("i = %d, j = %d\n", i, j);
+      klee_assert(out_image[i][j] > 128);
+    }
+  }
 
   return 0;
 }
