@@ -40,28 +40,46 @@ int erosion(short **the_image, short **out_image, short value, int threshold,
   for (i = 1; i < rows - 1; i++) {
     // if( (i%10) == 0) printf("%3d", i);
     for (j = 1; j < cols - 1; j++) {
-      #ifdef MERGE
+#ifdef MERGE
       klee_open_merge();
-      #endif
+#endif
       if (the_image[i][j] == value) {
         count = 0;
         for (a = -1; a <= 1; a++) {
           for (b = -1; b <= 1; b++) {
+#ifdef MERGE
+            klee_open_merge();
+#endif
             if ((i + a) >= 0) {
+#ifdef MERGE
+              klee_open_merge();
+#endif
               if (the_image[i + a][j + b] == 0)
                 count++;
+#ifdef MERGE
+              klee_close_merge();
+#endif
             }
+#ifdef MERGE
+            klee_close_merge();
+#endif
           } /*  ends loop over b */
         }   /* ends loop over a */
+#ifdef MERGE
+        klee_open_merge();
+#endif
         if (count > threshold) {
           out_image[i][j] = 0;
+#ifdef MERGE
+          klee_close_merge();
+#endif
         }
       } /* ends if the_image == value */
-      #ifdef MERGE
+#ifdef MERGE
       klee_close_merge();
-      #endif
-    }   /* ends loop over j */
-  }     /* ends loop over i */
+#endif
+    } /* ends loop over j */
+  }   /* ends loop over i */
 
   /*****
   fix_edges(out_image, 3, rows, cols);
@@ -87,8 +105,8 @@ int main() {
 
   // klee_assume(2 < width);
   // klee_assume(width < 20);
-  assert(0 < length && length < 10);
-  assert(0 < width && width < 10);
+  // assert(0 < length && length < 10);
+  // assert(0 < width && width < 10);
 
   the_image = allocate_image_array(length, width);
   out_image = allocate_image_array(length, width);
@@ -98,6 +116,13 @@ int main() {
   }
 
   erosion(the_image, out_image, value, threshold, length, width);
+
+  // FIXME: verify the result
+  for (int i = 0; i < length; i++) {
+    for (int j = 0; j < width; j++) {
+      klee_assert(out_image[i][j] > 128);
+    }
+  }
 
   return 0;
 }
