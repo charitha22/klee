@@ -43,11 +43,16 @@ int main() {
     klee_assume(arr[0] == 0);
     klee_assume(arr[1] == 1);
     klee_assume(arr[2] == 2);
-    for(unsigned int i = 3; i < N; i++) {
-        klee_assume((arr[i] == 0) || (arr[i] == 1) || arr[i] == 2);
+    for(unsigned int i = 0; i < N; i++) {
+        klee_assume((arr[i] == 0) | (arr[i] == 1) || arr[i] == 2);
     }
     
     flag(arr, N);
+
+    // verify the result
+    for(unsigned int i = 0; i < N-1; i++) {
+        klee_assert(arr[i]  <= arr[i+1]);
+    }
     
     return 0;
 }
