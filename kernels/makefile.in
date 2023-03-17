@@ -9,3 +9,4 @@ CLANG_FLAGS=-I $(KLEE_INCLUDE) -emit-llvm -S -Xclang -disable-O0-optnone -g
 
 KLEE_NOCFM_OPTIONS= --max-memory=51200  --write-cov --search=dfs --max-time=3600s --watchdog --solver-backend=stp
 KLEE_CFM_OPTIONS = $(KLEE_NOCFM_OPTIONS) -klee-cfmse
+KLEE_LIBC_FLAGS=--libc=uclibc
