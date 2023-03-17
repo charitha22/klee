@@ -14,6 +14,7 @@
 #include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/PassManager.h"
+#include "llvm/Pass.h"
 #include "llvm/Passes/OptimizationLevel.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Transforms/CFMSE/CFMSE.h"
@@ -383,6 +384,27 @@ void KModule::optimiseAndPrepare(
     }
 
     modulePassManager.addPass(CFMSEPass(cfmseOptions));
+    modulePassManager.run(*module, moduleAnalysisManager);
+  }
+  else {
+    // still strip non line debug info
+    llvm::PassBuilder passBuilder;
+    llvm::LoopAnalysisManager loopAnalysisManager;
+    llvm::FunctionAnalysisManager functionAnalysisManager;
+    llvm::CGSCCAnalysisManager cGSCCAnalysisManager;
+    llvm::ModuleAnalysisManager moduleAnalysisManager;
+
+    passBuilder.registerModuleAnalyses(moduleAnalysisManager);
+    passBuilder.registerCGSCCAnalyses(cGSCCAnalysisManager);
+    passBuilder.registerFunctionAnalyses(functionAnalysisManager);
+    passBuilder.registerLoopAnalyses(loopAnalysisManager);
+
+    passBuilder.crossRegisterProxies(
+        loopAnalysisManager, functionAnalysisManager, cGSCCAnalysisManager,
+        moduleAnalysisManager);
+
+    llvm::ModulePassManager modulePassManager;
+    modulePassManager.addPass(RemoveNonLineDebugInfoPass());
     modulePassManager.run(*module, moduleAnalysisManager);
   }
 
