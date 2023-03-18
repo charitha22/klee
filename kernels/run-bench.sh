@@ -1,4 +1,4 @@
-NRUNS=5
+NRUNS=3
 
 function run_bench  {
     echo "Running $1"
@@ -9,6 +9,7 @@ function run_bench  {
     fi
 
     cd $1
+    rm -f *.log *.csv
     for input_size in $2; do
         echo "Input size: $input_size"
         make clean >> compile_$input_size.log 2>&1
@@ -17,16 +18,16 @@ function run_bench  {
             echo "Run $i"
             echo "running klee"
             make klee >> klee_$input_size_$i.log 2>&1
-            cat klee-last/info >> klee_$input_size_$i.log 2>&1
+            ${KLEE_BUILD_DIR}/bin/klee-stats --to-csv klee-last/ >> klee_stats_$input_size_$i.csv 2>&1
             echo "running klee_sm"
             make klee_sm >> klee_sm_$input_size_$i.log 2>&1
-            cat klee-last/info >> klee_sm_$input_size_$i.log 2>&1
+            ${KLEE_BUILD_DIR}/bin/klee-stats --to-csv klee-last/ >> klee_sm_stats_$input_size_$i.csv 2>&1
             echo "running klee_cfm"
             make klee_cfm >> klee_cfm_$input_size_$i.log 2>&1
-            cat klee-last/info >> klee_cfm_$input_size_$i.log 2>&1
+            ${KLEE_BUILD_DIR}/bin/klee-stats --to-csv klee-last/ >> klee_cfm_stats_$input_size_$i.csv 2>&1
             echo "running klee_cfmsm"
             make klee_cfmsm >> klee_cfmsm_$input_size_$i.log 2>&1
-            cat klee-last/info >> klee_cfmsm_$input_size_$i.log 2>&1
+            ${KLEE_BUILD_DIR}/bin/klee-stats --to-csv klee-last/ >> klee_cfmsm_stats_$input_size_$i.csv 2>&1
         done
     done
     cd ..
@@ -43,5 +44,5 @@ run_bench "floyd_warshall" "3"
 run_bench "prim" "3"
 run_bench "transitive_closure" "3"
 
-# send email when done
+
 echo "Done" | mail -s "benchmarks run complete!" $USER
