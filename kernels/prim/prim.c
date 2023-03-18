@@ -72,4 +72,6 @@ int main()
     }
 
     primMST(graph, parent, key, mstSet, n);
+
+    return 0;
 }
