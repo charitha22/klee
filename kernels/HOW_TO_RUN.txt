@@ -1,0 +1,1 @@
+nohup taskset 0xF0000000 bash ./run-bench.sh &
