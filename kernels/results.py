@@ -3,13 +3,37 @@ import pandas as pd
 import numpy as np
 import glob
 import sys
+import pandas as pd
 
 # bench_dirs = ['bitonic_sort', 'connected_comp', 'detect_edges', 'dilation', 'erosion', 'floyd_warshall', 'kruskal', 'prim', 'toupper', 'transitive_closure']
 input_sizes = {'toupper': [10], 'connected_comp': [3], 'kruskal': [3], 'prim': [
     3], 'transitive_closure': [3], 'detect_edges': [3], 'dilation': [4], 'erosion': [4]}
-stats = ['Instrs', 'Time(s)', 'Queries', 'TSolver(%)',
-         'AvgSolverQuerySize', 'MaxMem(MiB)']
+stats_from_klee_stat = ['Instrs', 'Time(s)', 'Queries', 'TSolver(%)', 'AvgSolverQuerySize',
+         'MaxMem(MiB)']
+other_stats = ['Explored_Paths', 'Generated_Tests', 'Completed_Paths']
 
+result_dict = {'Benchmark': [], 'Input_Size': [], 'Technique': [], 'Instrs': [], 'Time(s)': [], 'Queries': [], 'TSolver(%)': [
+], 'AvgSolverQuerySize': [], 'MaxMem(MiB)': [], 'Explored_Paths': [], 'Generated_Tests': [], 'Completed_Paths': []}
+results = pd.DataFrame(result_dict)
+
+
+def extract_value_from_file(f):
+    explored_paths = "NA"
+    generated_tests = "NA"
+    completed_paths = "NA"
+
+    if not os.path.exists(f):
+        return explored_paths, generated_tests, completed_paths
+
+    with open(f) as f:
+        for line in f:
+            if 'KLEE: done: explored paths' in line:
+                explored_paths = int(line.split(' = ')[1])
+            if 'KLEE: done: generated tests' in line:
+                generated_tests = int(line.split(' = ')[1])
+            if 'KLEE: done: completed paths' in line:
+                completed_paths = int(line.split(' = ')[1])
+    return explored_paths, generated_tests, completed_paths
 
 def print_klee_stats(bench, input_size):
 
@@ -49,36 +73,23 @@ def print_klee_stats(bench, input_size):
         df_klee_cfmsm = df_klee_cfmsm.append(pd.read_csv(f).tail(1))
 
     # print the median of the stats for each dataframe
-    for stat in stats:
+    klee_stats = []
+    klee_cfm_stats = []
+    klee_sm_stats = []
+    klee_cfmsm_stats = []
+
+    for stat in stats_from_klee_stat:
         # print stat name
-        print(f'{stat}:')
-        print(f'KLEE,KLEE-CFM, KLEE-SM, KLEE-CFM-SM')
-        print(
-            f'{df_klee[stat].median()},{df_klee_cfm[stat].median()}, {df_klee_sm[stat].median()}, {df_klee_cfmsm[stat].median()}')
-        print('')
+        # print(f'{stat}:')
+        # print(f'KLEE,KLEE-CFM, KLEE-SM, KLEE-CFM-SM')
+        # print(
+        #     f'{df_klee[stat].median()},{df_klee_cfm[stat].median()}, {df_klee_sm[stat].median()}, {df_klee_cfmsm[stat].median()}')
+        # print('')
+        klee_stats.append(df_klee[stat].median())
+        klee_cfm_stats.append(df_klee_cfm[stat].median())
+        klee_sm_stats.append(df_klee_sm[stat].median())
+        klee_cfmsm_stats.append(df_klee_cfmsm[stat].median())
 
-
-def extract_value_from_file(f):
-    explored_paths = "NA"
-    generated_tests = "NA"
-    completed_paths = "NA"
-
-    if not os.path.exists(f):
-        return explored_paths, generated_tests, completed_paths
-
-    with open(f) as f:
-        for line in f:
-            if 'KLEE: done: explored paths' in line:
-                explored_paths = int(line.split(' = ')[1])
-            if 'KLEE: done: generated tests' in line:
-                generated_tests = int(line.split(' = ')[1])
-            if 'KLEE: done: completed paths' in line:
-                completed_paths = int(line.split(' = ')[1])
-    return explored_paths, generated_tests, completed_paths
-
-
-def print_path_stats(bench, input_size):
-    # obtain the number of explored paths for each technique
     log_file_klee = glob.glob(bench + f'/klee_{input_size}_1.log')[0]
     log_file_cfm = glob.glob(bench + f'/klee_cfm_{input_size}_1.log')[0]
     log_file_sm = glob.glob(bench + f'/klee_sm_{input_size}_1.log')[0]
@@ -86,35 +97,33 @@ def print_path_stats(bench, input_size):
         bench + f'/klee_cfmsm_{input_size}_1.log')[0]
 
     # open log_file_klee and itearte over the lines
-    explored_paths_klee, generated_tests_klee, completed_paths_klee = extract_value_from_file(
-        log_file_klee)
-    explored_paths_cfm, generated_tests_cfm, completed_paths_cfm = extract_value_from_file(
-        log_file_cfm)
-    explored_paths_sm, generated_tests_sm, completed_paths_sm = extract_value_from_file(
-        log_file_sm)
-    explored_paths_cfmsm, generated_tests_cfmsm, completed_paths_cfmsm = extract_value_from_file(
-        log_file_cfmsm)
+    for stat in extract_value_from_file(log_file_klee):
+        klee_stats.append(stat)
+    for stat in extract_value_from_file(log_file_cfm):
+        klee_cfm_stats.append(stat)
+    for stat in extract_value_from_file(log_file_sm):
+        klee_sm_stats.append(stat)
+    for stat in extract_value_from_file(log_file_cfmsm):
+        klee_cfmsm_stats.append(stat)
+
+    
+
+    results.loc[len(results)] = [bench, input_size, 'KLEE'] + klee_stats
+    results.loc[len(results)] = [bench, input_size,
+                                 'KLEE-CFM'] + klee_cfm_stats
+    results.loc[len(results)] = [bench, input_size, 'KLEE-SM'] + klee_sm_stats
+    results.loc[len(results)] = [bench, input_size,
+                                 'KLEE-CFM-SM'] + klee_cfmsm_stats
 
 
-    print('Explored Paths :')
-    print(f'KLEE,KLEE-CFM, KLEE-SM, KLEE-CFM-SM')
-    print(
-        f'{explored_paths_klee}, {explored_paths_cfm}, {explored_paths_sm}, {explored_paths_cfmsm}')
-    print()
-    print('Generated Tests')
-    print(f'KLEE,KLEE-CFM, KLEE-SM, KLEE-CFM-SM')
-    print(f'{generated_tests_klee}, {generated_tests_cfm}, {generated_tests_sm}, {generated_tests_cfmsm}')
-    print()
-    print('Completed Paths')
-    print(f'KLEE,KLEE-CFM, KLEE-SM, KLEE-CFM-SM')
-    print(f'{completed_paths_klee}, {completed_paths_cfm}, {completed_paths_sm}, {completed_paths_cfmsm}')
 
 
 if __name__ == '__main__':
+
     bench_dirs = sys.argv[1:]
     for bench in bench_dirs:
-        print(f' ===== Benchmark: {bench} =====')
         for input_size in input_sizes[bench]:
-            print('Input Size: ', input_size)
             print_klee_stats(bench, input_size)
-            print_path_stats(bench, input_size)
+            # print_path_stats(bench, input_size)
+
+    print(results.to_csv(index=False))
