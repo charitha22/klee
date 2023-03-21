@@ -53,6 +53,9 @@ int main() {
   }
 
   floyd_warshall(dist, n);
+
+#ifdef VERIFY
+  printf("verifying the result!\n");
   floyd_warshall_branchless(dist_copy, n);
   
   // verify the result
@@ -60,6 +63,7 @@ int main() {
     // printf("%d\n", i);
     klee_assert(dist[i] == dist_copy[i]);
   }
+#endif
 
   return 0;
 }
