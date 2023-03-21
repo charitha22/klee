@@ -29,10 +29,12 @@ int main()
     klee_make_symbolic(data, sizeof(data), "data");
 
     sort();
+#ifdef VERIFY
     for (int i = 0;i < SIZE-1;i++)
     {
         klee_assert(data[i] <= data[i+1]);
     }
+#endif
     return 0;
 }
 /*
