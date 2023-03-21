@@ -67,9 +67,12 @@ int main() {
   klee_make_symbolic(text, n*sizeof(char), "text");
 
   to_upper(text, n);
+
+#ifdef VERIFY
   // to_upper_final(text, n);
   for (int i = 0; i < n; i++)
     klee_assert(!((text[i] >= 'a') & (text[i] <= 'z')));
+#endif // VERIFY
 
   return 0;
 }
