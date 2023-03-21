@@ -7,7 +7,7 @@ import pandas as pd
 
 # bench_dirs = ['bitonic_sort', 'connected_comp', 'detect_edges', 'dilation', 'erosion', 'floyd_warshall', 'kruskal', 'prim', 'toupper', 'transitive_closure']
 input_sizes = {'toupper': [10], 'connected_comp': [3], 'kruskal': [3], 'prim': [
-    3], 'transitive_closure': [3], 'detect_edges': [3], 'dilation': [4], 'erosion': [4]}
+    3], 'transitive_closure': [3], 'detect_edges': [3], 'dilation': [4], 'erosion': [4], 'bitonic_sort': [4], 'floyd_warshall': [3], 'merge_sort' : [5]}
 stats_from_klee_stat = ['Instrs', 'Time(s)', 'Queries', 'TSolver(%)', 'AvgSolverQuerySize',
          'MaxMem(MiB)']
 other_stats = ['Explored_Paths', 'Generated_Tests', 'Completed_Paths']
@@ -79,22 +79,16 @@ def print_klee_stats(bench, input_size):
     klee_cfmsm_stats = []
 
     for stat in stats_from_klee_stat:
-        # print stat name
-        # print(f'{stat}:')
-        # print(f'KLEE,KLEE-CFM, KLEE-SM, KLEE-CFM-SM')
-        # print(
-        #     f'{df_klee[stat].median()},{df_klee_cfm[stat].median()}, {df_klee_sm[stat].median()}, {df_klee_cfmsm[stat].median()}')
-        # print('')
-        klee_stats.append(df_klee[stat].median())
-        klee_cfm_stats.append(df_klee_cfm[stat].median())
-        klee_sm_stats.append(df_klee_sm[stat].median())
-        klee_cfmsm_stats.append(df_klee_cfmsm[stat].median())
+        klee_stats.append(df_klee[stat].median()) if stat in df_klee.columns else klee_stats.append("NA")
+        klee_cfm_stats.append(df_klee_cfm[stat].median()) if stat in df_klee_cfm.columns else klee_cfm_stats.append("NA")
+        klee_sm_stats.append(df_klee_sm[stat].median()) if stat in df_klee_sm.columns else klee_sm_stats.append("NA")
+        klee_cfmsm_stats.append(df_klee_cfmsm[stat].median()) if stat in df_klee_cfmsm.columns else klee_cfmsm_stats.append("NA")
 
-    log_file_klee = glob.glob(bench + f'/klee_{input_size}_1.log')[0]
-    log_file_cfm = glob.glob(bench + f'/klee_cfm_{input_size}_1.log')[0]
-    log_file_sm = glob.glob(bench + f'/klee_sm_{input_size}_1.log')[0]
+    log_file_klee = glob.glob(bench + f'/klee_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_{input_size}_1.log') else "NA"
+    log_file_cfm = glob.glob(bench + f'/klee_cfm_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_cfm_{input_size}_1.log') else "NA"
+    log_file_sm = glob.glob(bench + f'/klee_sm_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_sm_{input_size}_1.log') else "NA"
     log_file_cfmsm = glob.glob(
-        bench + f'/klee_cfmsm_{input_size}_1.log')[0]
+        bench + f'/klee_cfmsm_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_cfmsm_{input_size}_1.log') else "NA"
 
     # open log_file_klee and itearte over the lines
     for stat in extract_value_from_file(log_file_klee):

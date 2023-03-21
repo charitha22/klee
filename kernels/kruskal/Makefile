@@ -24,9 +24,9 @@ klee_sm: $(file_name)_sm.ll
 	time $(KLEE_BIN) -use-merge $(KLEE_NOCFM_OPTIONS) $(KLEE_LIBC_FLAGS) $^
 
 klee_cfm: $(file_name)_nosm.ll
-	time $(KLEE_BIN) $(KLEE_CFM_OPTIONS) --klee-cfmse-run-only-on-loops=false --klee-cfmse-loads-symbolic $(KLEE_LIBC_FLAGS) $^
+	time $(KLEE_BIN) $(KLEE_CFM_OPTIONS) --klee-cfmse-run-only-on-loops=false $(KLEE_LIBC_FLAGS) $^
 
 klee_cfmsm: $(file_name)_sm.ll
-	time $(KLEE_BIN) -use-merge $(KLEE_CFM_OPTIONS) --klee-cfmse-run-only-on-loops=false --klee-cfmse-loads-symbolic  $(KLEE_LIBC_FLAGS) $^
+	time $(KLEE_BIN) -use-merge $(KLEE_CFM_OPTIONS) --klee-cfmse-run-only-on-loops=false  $(KLEE_LIBC_FLAGS) $^
 
 include ../makefile.clean

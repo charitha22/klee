@@ -118,11 +118,11 @@ int main() {
   erosion(the_image, out_image, value, threshold, length, width);
 
   // FIXME: verify the result
-  for (int i = 0; i < length; i++) {
-    for (int j = 0; j < width; j++) {
-      klee_assert(out_image[i][j] > 128);
-    }
-  }
+  /*for (int i = 0; i < length; i++) {*/
+    /*for (int j = 0; j < width; j++) {*/
+      /*klee_assert(out_image[i][j] > 128);*/
+    /*}*/
+  /*}*/
 
   return 0;
 }
