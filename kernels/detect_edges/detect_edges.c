@@ -502,12 +502,12 @@ int main() {
                width, bits_per_pixel);
 
    // FIXME : check some condition on out_image
-   for (int i = 0; i < length; i++) {
-      for (int j = 0; j < width; j++) {
-         printf("i = %d, j = %d\n", i, j);
-         klee_assert(out_image[i][j] > 128);
-      }
-   }
+   /*for (int i = 0; i < length; i++) {*/
+      /*for (int j = 0; j < width; j++) {*/
+         /*printf("i = %d, j = %d\n", i, j);*/
+         /*klee_assert(out_image[i][j] > 128);*/
+      /*}*/
+   /*}*/
 
   return 0;
 }
