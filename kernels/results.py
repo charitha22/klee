@@ -6,24 +6,36 @@ import sys
 import pandas as pd
 
 # bench_dirs = ['bitonic_sort', 'connected_comp', 'detect_edges', 'dilation', 'erosion', 'floyd_warshall', 'kruskal', 'prim', 'toupper', 'transitive_closure']
-input_sizes = {'toupper': [10], 'connected_comp': [3], 'kruskal': [3], 'prim': [
-    3], 'transitive_closure': [3], 'detect_edges': [3], 'dilation': [4], 'erosion': [4], 'bitonic_sort': [4], 'floyd_warshall': [3], 'merge_sort' : [5]}
-stats_from_klee_stat = ['Instrs', 'Time(s)', 'Queries', 'TSolver(%)', 'AvgSolverQuerySize',
+input_sizes = {'toupper': [10, 50, 100], 'connected_comp': [3, 4, 5], 'kruskal': [3, 4, 5], 'prim': [
+    4, 5, 6], 'transitive_closure': [3, 4, 5], 'detect_edges': [3], 'dilation': [4], 'erosion': [4], 'bitonic_sort': [4, 8, 16], 'floyd_warshall': [3], 'merge_sort' : [5, 10, 15]}
+stats_from_klee_stat = ['Instrs', 'Time(s)', 'Queries', 'QCexCHits', 'TSolver(%)', 'AvgSolverQuerySize',
          'MaxMem(MiB)']
 other_stats = ['Explored_Paths', 'Generated_Tests', 'Completed_Paths']
 
-result_dict = {'Benchmark': [], 'Input_Size': [], 'Technique': [], 'Instrs': [], 'Time(s)': [], 'Queries': [], 'TSolver(%)': [
-], 'AvgSolverQuerySize': [], 'MaxMem(MiB)': [], 'Explored_Paths': [], 'Generated_Tests': [], 'Completed_Paths': []}
+result_dict = {'Benchmark': [], 'Input_Size': [], 
+               'Instrs-klee': [],'Instrs-cfm': [],'Instrs-sm': [],'Instrs-cfm-sm': [], 
+               'Time(s)-klee': [],'Time(s)-cfm': [], 'Time(s)-sm': [], 'Time(s)-cfm-sm': [], 
+               'Queries-klee': [],'Queries-cfm': [],'Queries-sm': [],'Queries-cfm-sm': [], 
+                'QCexCHits-klee': [],'QCexCHits-cfm': [],'QCexCHits-sm': [],'QCexCHits-cfm-sm': [],
+               'TSolver(%)-klee': [],'TSolver(%)-cfm': [],'TSolver(%)-sm': [],'TSolver(%)-cfm-sm': [],
+               'AvgSolverQuerySize-klee': [],'AvgSolverQuerySize-cfm': [],'AvgSolverQuerySize-sm': [],'AvgSolverQuerySize-cfm-sm': [],
+               'MaxMem(MiB)-klee': [],'MaxMem(MiB)-cfm': [],'MaxMem(MiB)-sm': [],'MaxMem(MiB)-cfm-sm': [],
+               'Explored_Paths-klee': [], 'Explored_Paths-cfm': [], 'Explored_Paths-sm': [], 'Explored_Paths-cfm-sm': [], 
+               'Generated_Tests-klee': [], 'Generated_Tests-cfm': [],'Generated_Tests-sm': [],'Generated_Tests-cfm-sm': [],
+               'Completed_Paths-klee': [], 'Completed_Paths-cfm': [], 'Completed_Paths-sm': [],'Completed_Paths-cfm-sm': []}
 results = pd.DataFrame(result_dict)
 
 
 def extract_value_from_file(f):
-    explored_paths = "NA"
-    generated_tests = "NA"
-    completed_paths = "NA"
+
+    out = {'Explored_Paths': 'NA', 'Generated_Tests': 'NA', 'Completed_Paths': 'NA'}
 
     if not os.path.exists(f):
-        return explored_paths, generated_tests, completed_paths
+        return out
+    
+    explored_paths = 'NA'
+    generated_tests = 'NA'
+    completed_paths = 'NA'
 
     with open(f) as f:
         for line in f:
@@ -33,7 +45,12 @@ def extract_value_from_file(f):
                 generated_tests = int(line.split(' = ')[1])
             if 'KLEE: done: completed paths' in line:
                 completed_paths = int(line.split(' = ')[1])
-    return explored_paths, generated_tests, completed_paths
+
+    
+    out['Explored_Paths'] = explored_paths
+    out['Generated_Tests'] = generated_tests
+    out['Completed_Paths'] = completed_paths
+    return out
 
 def print_klee_stats(bench, input_size):
 
@@ -51,7 +68,7 @@ def print_klee_stats(bench, input_size):
         bench + f'/klee_cfmsm_stats_{input_size}*.csv')
 
     # if any of above list is empty, print error message and exit
-    if len(files_cfm) == 0 or len(files_sm) == 0 or len(files_cfmsm) == 0:
+    if len(files_klee) == 0 and len(files_cfm) == 0 and len(files_sm) == 0 and len(files_cfmsm) == 0:
         print(
             f'Error: No files found for {bench} with input size {input_size}')
         exit(-1)
@@ -74,15 +91,14 @@ def print_klee_stats(bench, input_size):
 
     # print the median of the stats for each dataframe
     klee_stats = []
-    klee_cfm_stats = []
-    klee_sm_stats = []
-    klee_cfmsm_stats = []
 
     for stat in stats_from_klee_stat:
-        klee_stats.append(df_klee[stat].median()) if stat in df_klee.columns else klee_stats.append("NA")
-        klee_cfm_stats.append(df_klee_cfm[stat].median()) if stat in df_klee_cfm.columns else klee_cfm_stats.append("NA")
-        klee_sm_stats.append(df_klee_sm[stat].median()) if stat in df_klee_sm.columns else klee_sm_stats.append("NA")
-        klee_cfmsm_stats.append(df_klee_cfmsm[stat].median()) if stat in df_klee_cfmsm.columns else klee_cfmsm_stats.append("NA")
+        klee_val = df_klee[stat].median() if stat in df_klee.columns else "NA"
+        klee_cfm_val = df_klee_cfm[stat].median() if stat in df_klee_cfm.columns else "NA"
+        klee_sm_val = df_klee_sm[stat].median() if stat in df_klee_sm.columns else "NA"
+        klee_cfmsm_val = df_klee_cfmsm[stat].median() if stat in df_klee_cfmsm.columns else "NA"
+
+        klee_stats = klee_stats + [klee_val, klee_cfm_val, klee_sm_val, klee_cfmsm_val]
 
     log_file_klee = glob.glob(bench + f'/klee_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_{input_size}_1.log') else "NA"
     log_file_cfm = glob.glob(bench + f'/klee_cfm_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_cfm_{input_size}_1.log') else "NA"
@@ -91,23 +107,16 @@ def print_klee_stats(bench, input_size):
         bench + f'/klee_cfmsm_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_cfmsm_{input_size}_1.log') else "NA"
 
     # open log_file_klee and itearte over the lines
-    for stat in extract_value_from_file(log_file_klee):
-        klee_stats.append(stat)
-    for stat in extract_value_from_file(log_file_cfm):
-        klee_cfm_stats.append(stat)
-    for stat in extract_value_from_file(log_file_sm):
-        klee_sm_stats.append(stat)
-    for stat in extract_value_from_file(log_file_cfmsm):
-        klee_cfmsm_stats.append(stat)
+    other_stats_klee = extract_value_from_file(log_file_klee)
+    other_stats_cfm = extract_value_from_file(log_file_cfm)
+    other_stats_sm = extract_value_from_file(log_file_sm)
+    other_stats_cfmsm = extract_value_from_file(log_file_cfmsm)
+
+    for stat in other_stats:
+        klee_stats = klee_stats + [other_stats_klee[stat], other_stats_cfm[stat], other_stats_sm[stat], other_stats_cfmsm[stat]]
 
     
-
-    results.loc[len(results)] = [bench, input_size, 'KLEE'] + klee_stats
-    results.loc[len(results)] = [bench, input_size,
-                                 'KLEE-CFM'] + klee_cfm_stats
-    results.loc[len(results)] = [bench, input_size, 'KLEE-SM'] + klee_sm_stats
-    results.loc[len(results)] = [bench, input_size,
-                                 'KLEE-CFM-SM'] + klee_cfmsm_stats
+    results.loc[len(results)] = [bench, input_size] + klee_stats
 
 
 
