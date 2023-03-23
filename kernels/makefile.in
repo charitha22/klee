@@ -7,6 +7,6 @@ CFMSE_FLAGS=-enable-new-pm -mem2reg -S
 KLEE_INCLUDE=$(KLEE_BUILD_DIR)/../include
 CLANG_FLAGS=-I $(KLEE_INCLUDE) -emit-llvm -S -Xclang -disable-O0-optnone -g
 
-KLEE_NOCFM_OPTIONS= --max-memory=51200  --write-cov --max-time=3600s --solver-backend=stp --dump-states-on-halt=false --only-output-states-covering-new
+KLEE_NOCFM_OPTIONS= --max-memory=51200  --write-cov --max-time=3600s --solver-backend=stp --dump-states-on-halt=false --only-output-states-covering-new --output-dir=$(OUTPUT_DIR)
 KLEE_CFM_OPTIONS = $(KLEE_NOCFM_OPTIONS) -klee-cfmse -klee-cfmse-loads-symbolic
 KLEE_LIBC_FLAGS=--libc=uclibc
