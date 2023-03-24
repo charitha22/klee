@@ -7,7 +7,7 @@ import pandas as pd
 
 # bench_dirs = ['bitonic_sort', 'connected_comp', 'detect_edges', 'dilation', 'erosion', 'floyd_warshall', 'kruskal', 'prim', 'toupper', 'transitive_closure']
 input_sizes = {'toupper': [10, 50, 100], 'connected_comp': [3, 4, 5], 'kruskal': [3, 4, 5], 'prim': [
-    4, 5, 6], 'transitive_closure': [3, 4, 5], 'detect_edges': [3], 'dilation': [4], 'erosion': [4], 'bitonic_sort': [4, 8, 16], 'floyd_warshall': [3], 'merge_sort' : [5, 10, 15]}
+    4, 5, 6], 'transitive_closure': [3, 4, 5], 'detect_edges': [3, 4, 5], 'dilation': [4, 5, 6], 'erosion': [4], 'bitonic_sort': [4, 8, 16], 'floyd_warshall': [3, 4, 5], 'merge_sort' : [5, 10, 15]}
 stats_from_klee_stat = ['Instrs', 'Time(s)', 'Queries', 'QCexCHits', 'TSolver(%)', 'AvgSolverQuerySize',
          'MaxMem(MiB)']
 other_stats = ['Explored_Paths', 'Generated_Tests', 'Completed_Paths']
