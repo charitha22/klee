@@ -34,6 +34,7 @@ int main()
     {
         klee_assert(data[i] <= data[i+1]);
     }
+    printf("verified\n");
 #endif
     return 0;
 }

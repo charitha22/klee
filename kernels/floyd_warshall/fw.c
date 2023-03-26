@@ -63,6 +63,7 @@ int main() {
     // printf("%d\n", i);
     klee_assert(dist[i] == dist_copy[i]);
   }
+  printf("verified!\n");
 #endif
 
   return 0;
