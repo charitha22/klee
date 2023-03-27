@@ -25,7 +25,7 @@ int minKey(int* key, bool* mstSet, int n)
     return min_index;
 }
 
-void primMST(int *graph, int *parent, int *key, bool* mstSet, int n)
+int primMST(int *graph, int *parent, int *key, bool* mstSet, int n)
 {
     for (int i = 0; i < n; i++) {
         key[i] = INT_MAX; 
@@ -34,7 +34,7 @@ void primMST(int *graph, int *parent, int *key, bool* mstSet, int n)
  
     key[0] = 0;
     parent[0] = -1;
- 
+    
     for (int count = 0; count < n - 1; count++) {
         int u = minKey(key, mstSet, n);
         mstSet[u] = true;
@@ -53,7 +53,12 @@ void primMST(int *graph, int *parent, int *key, bool* mstSet, int n)
             #endif
         }
     }
- 
+    // computing cost of the MST
+    int minCost = 0;
+    for (int i = 0; i < n; i++) {
+        minCost += key[i];
+    }
+    return minCost;
 }
 
 int main()
@@ -71,7 +76,7 @@ int main()
         }
     }
 
-    primMST(graph, parent, key, mstSet, n);
+    int minCost = primMST(graph, parent, key, mstSet, n);
 
     return 0;
 }
