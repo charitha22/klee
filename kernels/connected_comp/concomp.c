@@ -37,6 +37,17 @@ int connected_comp(bool *graph, int * cc, int n) {
     return numcc;
 }
 
+bool cc_verify(bool *graph, int *cc, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (graph[i*n+j]) {
+                if (cc[i] != cc[j]) return false;
+            }
+        }
+    }
+    return true;
+}
+
 int main() {
     int n = SIZE;
     bool *graph = (bool*)malloc(n*n*sizeof(bool));
@@ -45,5 +56,9 @@ int main() {
     klee_make_symbolic(cc, n*sizeof(int), "cc");
     int numcc = connected_comp(graph, cc, n);
     //printf("number of connected components: %d\n", numcc);
+    #ifdef VERIFY
+    klee_assert(cc_verify(graph, cc, n));
+    printf("verified\n");
+    #endif 
     return 0;
 }
