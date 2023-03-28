@@ -70,10 +70,10 @@ int erosion(short **the_image, short **out_image, short value, int threshold,
 #endif
         if (count > threshold) {
           out_image[i][j] = 0;
-#ifdef MERGE
-          klee_close_merge();
-#endif
         }
+#ifdef MERGE
+        klee_close_merge();
+#endif
       } /* ends if the_image == value */
 #ifdef MERGE
       klee_close_merge();
@@ -97,17 +97,6 @@ int main() {
   short **the_image;
   short **out_image;
 
-  // klee_make_symbolic(&length, sizeof(long), "length");
-  // klee_make_symbolic(&width, sizeof(long), "width");
-
-  // klee_assume(2 < length);
-  // klee_assume(length < 20);
-
-  // klee_assume(2 < width);
-  // klee_assume(width < 20);
-  // assert(0 < length && length < 10);
-  // assert(0 < width && width < 10);
-
   the_image = allocate_image_array(length, width);
   out_image = allocate_image_array(length, width);
 
@@ -115,14 +104,24 @@ int main() {
     klee_make_symbolic(the_image[i], width * sizeof(short), "the_image");
   }
 
+  // each pixel value is either 0 or 1
+  for (int i = 0; i < length; i++) {
+    for (int j = 0; j < width; j++) {
+      klee_assume(((the_image[i][j] == 0) | (the_image[i][j] == 1)));
+    }
+  }
+
   erosion(the_image, out_image, value, threshold, length, width);
 
-  // FIXME: verify the result
-  /*for (int i = 0; i < length; i++) {*/
-    /*for (int j = 0; j < width; j++) {*/
-      /*klee_assert(out_image[i][j] > 128);*/
-    /*}*/
-  /*}*/
+#ifdef VERIFY
+  // each pixel value must be smaller or eqaul to original value
+  for (int i = 0; i < length; i++) {
+    for (int j = 0; j < width; j++) {
+      klee_assert(out_image[i][j] <= the_image[i][j]);
+    }
+  }
+  printf("Verified!\n");
+#endif
 
   return 0;
 }
