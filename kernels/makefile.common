@@ -33,6 +33,9 @@ klee_cfm: $(file_name)_nosm.ll
 klee_cfmsm: $(file_name)_sm.ll
 	time $(KLEE_BIN) -use-merge $(KLEE_CFM_OPTIONS) $(KLEE_EXTRA_OPTIONS) $(CFM_EXTRA_OPTIONS) $^
 
+klee_verify: $(file_name)_nosm_verify.ll
+	time $(KLEE_BIN) $(KLEE_NOCFM_OPTIONS) $(KLEE_EXTRA_OPTIONS) $^
+
 klee_sm_verify: $(file_name)_sm_verify.ll
 	time $(KLEE_BIN) -use-merge $(KLEE_NOCFM_OPTIONS) $(KLEE_EXTRA_OPTIONS) $^
 
