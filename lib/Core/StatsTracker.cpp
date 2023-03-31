@@ -36,6 +36,7 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/Metadata.h"
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Type.h"
@@ -43,9 +44,12 @@
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/Process.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <fstream>
 #include <unistd.h>
+#include <ctime>
+#include <iomanip>
 
 using namespace klee;
 using namespace llvm;
@@ -166,7 +170,7 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
                            bool _updateMinDistToUncovered)
   : executor(_executor),
     objectFilename(_objectFilename),
-    startWallTime(time::getWallTime()),
+  startWallTime(time::getWallTime()),
     numBranches(0),
     fullBranches(0),
     partialBranches(0),
@@ -205,18 +209,45 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
   if (useStatistics() || userSearcherRequiresMD2U())
     theStatisticManager->useIndexedStats(km->infos->getMaxID());
 
+  std::set<int> coverableSourceInsts;
   for (auto &kfp : km->functions) {
     KFunction *kf = kfp.get();
     kf->trackCoverage = 1;
 
     for (unsigned i=0; i<kf->numInstructions; ++i) {
       KInstruction *ki = kf->instructions[i];
+      MDNode* mergedLineNum = ki->inst->getMetadata("mergedLineNum");
+      DebugLoc location = ki->inst->getDebugLoc();
+      if(mergedLineNum != NULL) {
+        std::string mergedLineString = llvm::cast<llvm::MDString>(mergedLineNum->getOperand(0))->getString().str();
+        std::stringstream stringStream(mergedLineString);
+
+        std::string lineNumber;
+        while(std::getline(stringStream, lineNumber, ',')) {
+          int lineNum = std::stoi(lineNumber);
+          if(lineNum != 0 || lineNum != -1) {
+            coverableSourceInsts.insert(lineNum);
+            // ki->inst->print(outs());
+            // outs() << "\n";
+            // outs() << lineNum;
+            // outs() << "\n";
+          }
+        }
+      } else if(location) {
+          int lineNum = static_cast<int>(location.getLine());
+          coverableSourceInsts.insert(lineNum);
+          //ki->inst->print(outs());
+          // outs() << "\n";
+          // outs() << lineNum;
+          // outs() << "\n";
+      }
 
       if (OutputIStats) {
         unsigned id = ki->info->id;
         theStatisticManager->setIndex(id);
-        if (kf->trackCoverage && instructionIsCoverable(ki->inst))
+        if (kf->trackCoverage && instructionIsCoverable(ki->inst)) {
           ++stats::uncoveredInstructions;
+        }
       }
       
       if (kf->trackCoverage) {
@@ -226,6 +257,10 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
       }
     }
   }
+
+  totalCoverableInstructions = coverableSourceInsts.size();
+  outs() << totalCoverableInstructions;
+  outs() << "\n";
 
   if (OutputStats) {
     sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
@@ -288,6 +323,7 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
 
   if (OutputIStats) {
     istatsFile = executor.interpreterHandler->openOutputFile("run.istats");
+    coverageFile = executor.interpreterHandler->openOutputFile("coverage.txt");
     if (istatsFile) {
       if (iStatsWriteInterval)
         executor.timers.add(std::make_unique<Timer>(iStatsWriteInterval, [&]{
@@ -323,6 +359,17 @@ void StatsTracker::done() {
     if (istatsFile)
       writeIStats();
   }
+
+  if(coverageFile) {
+    llvm::raw_fd_ostream &outFile = *coverageFile;
+    outFile.seek(0);
+    for (auto const& p : sourceInstCov)
+    {
+        outs() << p.first << ' ' << p.second << '\n';
+        outFile << p.first << ' ' << llvm::format("%.3f", p.second) << '\n';
+    }
+    outFile.flush();
+  }
 }
 
 void StatsTracker::stepInstruction(ExecutionState &es) {
@@ -357,22 +404,38 @@ void StatsTracker::stepInstruction(ExecutionState &es) {
 
     if (sf.kf->trackCoverage && instructionIsCoverable(inst)) {
       if (!theStatisticManager->getIndexedValue(stats::coveredInstructions, ii.id)) {
-        // Checking for actual stoppoints avoids inconsistencies due
-        // to line number propogation.
-        //
-        // FIXME: This trick no longer works, we should fix this in the line
-        // number propogation.
+        if(MDNode* mergedLineNum = inst->getMetadata("mergedLineNum")) {  
+          std::string mergedLineString = llvm::cast<llvm::MDString>(mergedLineNum->getOperand(0))->getString().str();
+          std::stringstream stringStream(mergedLineString);
 
-        // if IntructionInfo has merged line number then update the corresponding
-        // lines in the coveredLines map otherwise perform the default.
-        // if mergedLine exists
-        //es.coveredLines[&ii.file].insert(l1);
-        //es.coveredLines[&ii.file].insert(l2);
-          es.coveredLines[&ii.file].insert(ii.line);
-	es.coveredNew = true;
+          std::string lineNumber;
+          while(std::getline(stringStream, lineNumber, ',')) {
+            int lineNum = std::stoi(lineNumber);
+            if(lineNum != 0 || lineNum != -1) {
+              sourceCoveredInst.insert(lineNum);
+              // outs() << lineNum;
+              // outs() << '\n';
+            }
+          }
+          
+          float percentCoverage = (sourceCoveredInst.size() / static_cast<float>(totalCoverableInstructions)) * 100.0;
+          std::time_t now = std::time(nullptr);
+          sourceInstCov[now] = percentCoverage;
+        } else if(DebugLoc location = inst->getDebugLoc()) {
+          int lineNum = static_cast<int>(location.getLine());
+          // outs() << lineNum;
+          // outs() << '\n';
+          sourceCoveredInst.insert(lineNum);
+          float percentCoverage = (sourceCoveredInst.size() / static_cast<float>(totalCoverableInstructions)) * 100.0;
+          std::time_t now = std::time(nullptr);
+          sourceInstCov[now] = percentCoverage;
+        }
+
+        es.coveredLines[&ii.file].insert(ii.line);
+        es.coveredNew = true;
         es.instsSinceCovNew = 1;
-	++stats::coveredInstructions;
-	stats::uncoveredInstructions += (uint64_t)-1;
+        ++stats::coveredInstructions;
+        stats::uncoveredInstructions += (uint64_t)-1;
       }
     }
   }
