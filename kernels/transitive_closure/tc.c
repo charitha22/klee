@@ -51,12 +51,15 @@ int main() {
     graph2[i] = graph1[i];
   }
   transitive_closure(graph1, n);
+#ifdef VERIFY
   transitive_closure_branchless(graph2, n);
 
   // verify the results are the same
   for (int i = 0; i < n * n; i++) {
     klee_assert(graph1[i] == graph2[i]);
   }
+  printf("Verified!\n");
+#endif
 
   return 0;
 }

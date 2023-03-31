@@ -72,6 +72,7 @@ int main() {
   // to_upper_final(text, n);
   for (int i = 0; i < n; i++)
     klee_assert(!((text[i] >= 'a') & (text[i] <= 'z')));
+  printf("verified\n");
 #endif // VERIFY
 
   return 0;

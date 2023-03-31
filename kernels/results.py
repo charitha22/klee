@@ -5,14 +5,13 @@ import glob
 import sys
 import pandas as pd
 
-# bench_dirs = ['bitonic_sort', 'connected_comp', 'detect_edges', 'dilation', 'erosion', 'floyd_warshall', 'kruskal', 'prim', 'toupper', 'transitive_closure']
 input_sizes = {'toupper': [10, 50, 100], 'connected_comp': [3, 4, 5], 'kruskal': [3, 4, 5], 'prim': [
     4, 5, 6], 'transitive_closure': [3, 4, 5], 'detect_edges': [3, 4, 5], 'dilation': [4, 5, 6], 'erosion': [4, 5, 6], 'bitonic_sort': [4, 8, 16], 'floyd_warshall': [3, 4, 5], 'merge_sort' : [5, 10, 15]}
 stats_from_klee_stat = ['Instrs', 'Time(s)', 'Queries', 'QCexCHits', 'TSolver(%)', 'AvgSolverQuerySize',
          'MaxMem(MiB)']
 other_stats = ['Explored_Paths', 'Generated_Tests', 'Completed_Paths']
 
-result_dict = {'Benchmark': [], 'Input_Size': [], 
+result_dict = {'bench_dirmark': [], 'Input_Size': [], 
                'Instrs-klee': [],'Instrs-cfm': [],'Instrs-sm': [],'Instrs-cfm-sm': [], 
                'Time(s)-klee': [],'Time(s)-cfm': [], 'Time(s)-sm': [], 'Time(s)-cfm-sm': [], 
                'Queries-klee': [],'Queries-cfm': [],'Queries-sm': [],'Queries-cfm-sm': [], 
@@ -52,7 +51,7 @@ def extract_value_from_file(f):
     out['Completed_Paths'] = completed_paths
     return out
 
-def print_klee_stats(bench, input_size):
+def print_klee_stats(bench_dir, input_size, methods = ["klee", "klee_cfm", "klee_sm", "klee_cfmsm"]):
 
     # create empty dataframes for klee, klee_cfm, klee_sm and klee_cfmsm
     df_klee = pd.DataFrame()
@@ -61,16 +60,16 @@ def print_klee_stats(bench, input_size):
     df_klee_cfmsm = pd.DataFrame()
 
     # list files for 4 techniques
-    files_klee = glob.glob(bench + f'/klee_stats_{input_size}*.csv')
-    files_cfm = glob.glob(bench + f'/klee_cfm_stats_{input_size}*.csv')
-    files_sm = glob.glob(bench + f'/klee_sm_stats_{input_size}*.csv')
+    files_klee = glob.glob(bench_dir + f'/{methods[0]}_stats_{input_size}_*.csv')
+    files_cfm = glob.glob(bench_dir + f'/{methods[1]}_stats_{input_size}_*.csv')
+    files_sm = glob.glob(bench_dir + f'/{methods[2]}_stats_{input_size}_*.csv')
     files_cfmsm = glob.glob(
-        bench + f'/klee_cfmsm_stats_{input_size}*.csv')
+        bench_dir + f'/{methods[3]}_stats_{input_size}_*.csv')
 
     # if any of above list is empty, print error message and exit
     if len(files_klee) == 0 and len(files_cfm) == 0 and len(files_sm) == 0 and len(files_cfmsm) == 0:
         print(
-            f'Error: No files found for {bench} with input size {input_size}')
+            f'Error: No files found for {bench_dir} with input size {input_size}')
         exit(-1)
 
     for f in files_klee:
@@ -89,6 +88,9 @@ def print_klee_stats(bench, input_size):
         # read csv file and append the last row to the dataframe
         df_klee_cfmsm = df_klee_cfmsm.append(pd.read_csv(f).tail(1))
 
+    # print(df_klee['Queries'])
+    # print(df_klee_cfmsm['Queries'])
+
     # print the median of the stats for each dataframe
     klee_stats = []
 
@@ -100,12 +102,19 @@ def print_klee_stats(bench, input_size):
 
         klee_stats = klee_stats + [klee_val, klee_cfm_val, klee_sm_val, klee_cfmsm_val]
 
-    log_file_klee = glob.glob(bench + f'/klee_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_{input_size}_1.log') else "NA"
-    log_file_cfm = glob.glob(bench + f'/klee_cfm_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_cfm_{input_size}_1.log') else "NA"
-    log_file_sm = glob.glob(bench + f'/klee_sm_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_sm_{input_size}_1.log') else "NA"
-    log_file_cfmsm = glob.glob(
-        bench + f'/klee_cfmsm_{input_size}_1.log')[0] if glob.glob(bench + f'/klee_cfmsm_{input_size}_1.log') else "NA"
+    log_file_klee_name =  f'{methods[0]}_{input_size}_1.log'
+    log_file_cfm_name =  f'{methods[1]}_{input_size}_1.log'
+    log_file_sm_name =  f'{methods[2]}_{input_size}_1.log'
+    log_file_cfmsm_name =  f'{methods[3]}_{input_size}_1.log'
 
+    # print(bench_dir + log_file_klee_name)
+    log_file_klee = glob.glob(bench_dir + '/' + log_file_klee_name)[0] if glob.glob(bench_dir +'/' + log_file_klee_name) else "NA"
+    log_file_cfm = glob.glob(bench_dir +'/' + log_file_cfm_name)[0] if glob.glob(bench_dir +'/' + log_file_cfm_name) else "NA"
+    log_file_sm = glob.glob(bench_dir +'/' + log_file_sm_name)[0] if glob.glob(bench_dir +'/' + log_file_sm_name) else "NA"
+    log_file_cfmsm = glob.glob(
+        bench_dir +'/' + log_file_cfmsm_name)[0] if glob.glob(bench_dir + '/'+ log_file_cfmsm_name) else "NA"
+
+    
     # open log_file_klee and itearte over the lines
     other_stats_klee = extract_value_from_file(log_file_klee)
     other_stats_cfm = extract_value_from_file(log_file_cfm)
@@ -116,17 +125,19 @@ def print_klee_stats(bench, input_size):
         klee_stats = klee_stats + [other_stats_klee[stat], other_stats_cfm[stat], other_stats_sm[stat], other_stats_cfmsm[stat]]
 
     
-    results.loc[len(results)] = [bench, input_size] + klee_stats
+    results.loc[len(results)] = [bench_dir, input_size] + klee_stats
 
 
 
 
 if __name__ == '__main__':
 
-    bench_dirs = sys.argv[1:]
-    for bench in bench_dirs:
-        for input_size in input_sizes[bench]:
-            print_klee_stats(bench, input_size)
-            # print_path_stats(bench, input_size)
+    bench_dir = sys.argv[1]
+    bench_name = sys.argv[1].split('/')[0]
+
+    for input_size in input_sizes[bench_name]:
+        print_klee_stats(bench_dir, input_size)
+        # print_klee_stats(bench_dir, input_size, methods = ["klee_verify", "klee_cfm_verify", "klee_sm_verify", "klee_cfmsm_verify"])
+        
 
     print(results.to_csv(index=False))
