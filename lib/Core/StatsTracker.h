@@ -40,6 +40,7 @@ namespace klee {
     std::string objectFilename;
 
     std::unique_ptr<llvm::raw_fd_ostream> istatsFile;
+    std::unique_ptr<llvm::raw_fd_ostream> coverageFile;
     ::sqlite3 *statsFile = nullptr;
     ::sqlite3_stmt *transactionBeginStmt = nullptr;
     ::sqlite3_stmt *transactionEndStmt = nullptr;
@@ -50,6 +51,11 @@ namespace klee {
 
     unsigned numBranches;
     unsigned fullBranches, partialBranches;
+    std::map<std::time_t, float> sourceInstCov;
+    std::set<int> sourceCoveredInst;
+    time::Point prevTime;
+    unsigned totalCoverableInstructions = 0;
+
 
     CallPathManager callPathManager;
 
