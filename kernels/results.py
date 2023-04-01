@@ -4,6 +4,7 @@ import numpy as np
 import glob
 import sys
 import pandas as pd
+import optparse as op
 
 input_sizes = {'toupper': [10, 50, 100], 'connected_comp': [3, 4, 5], 'kruskal': [3, 4, 5], 'prim': [
     4, 5, 6], 'transitive_closure': [3, 4, 5], 'detect_edges': [3, 4, 5], 'dilation': [4, 5, 6], 'erosion': [4, 5, 6], 'bitonic_sort': [4, 8, 16], 'floyd_warshall': [3, 4, 5], 'merge_sort' : [5, 10, 15]}
@@ -72,6 +73,12 @@ def print_klee_stats(bench_dir, input_size, methods = ["klee", "klee_cfm", "klee
             f'Error: No files found for {bench_dir} with input size {input_size}')
         exit(-1)
 
+    print("Reading following files:")
+    print("Files for klee: ", files_klee)
+    print("Files for klee_cfm: ", files_cfm)
+    print("Files for klee_sm: ", files_sm)
+    print("Files for klee_cfmsm: ", files_cfmsm)
+
     for f in files_klee:
         # read csv file and append the last row to the dataframe
         df_klee = df_klee.append(pd.read_csv(f).tail(1))
@@ -114,7 +121,12 @@ def print_klee_stats(bench_dir, input_size, methods = ["klee", "klee_cfm", "klee
     log_file_cfmsm = glob.glob(
         bench_dir +'/' + log_file_cfmsm_name)[0] if glob.glob(bench_dir + '/'+ log_file_cfmsm_name) else "NA"
 
-    
+    print("Reading following log files:")
+    print("Log file for klee: ", log_file_klee)
+    print("Log file for klee_cfm: ", log_file_cfm)
+    print("Log file for klee_sm: ", log_file_sm)
+    print("Log file for klee_cfmsm: ", log_file_cfmsm)
+
     # open log_file_klee and itearte over the lines
     other_stats_klee = extract_value_from_file(log_file_klee)
     other_stats_cfm = extract_value_from_file(log_file_cfm)
@@ -132,12 +144,25 @@ def print_klee_stats(bench_dir, input_size, methods = ["klee", "klee_cfm", "klee
 
 if __name__ == '__main__':
 
-    bench_dir = sys.argv[1]
-    bench_name = sys.argv[1].split('/')[0]
+    # define an argument parser
+    parser = op.OptionParser()
+    # add optioin to specify the directory of the benchmark and store it in bench_dir
+    parser.add_option('-b', '--bench_dir', dest='bench_dir', help='directory of the benchmark')
+    # add option to specify the verify flag
+    parser.add_option('-v', '--verify', dest='verify', action='store_true', help='print verify data')
+
+    # parse the arguments
+    (options, args) = parser.parse_args()
+
+    # extract bench mark name from the bench_dir
+    bench_name = options.bench_dir.split('/')[0]
+
 
     for input_size in input_sizes[bench_name]:
-        print_klee_stats(bench_dir, input_size)
-        # print_klee_stats(bench_dir, input_size, methods = ["klee_verify", "klee_cfm_verify", "klee_sm_verify", "klee_cfmsm_verify"])
+        if not options.verify:
+            print_klee_stats(options.bench_dir, input_size)
+        else:
+            print_klee_stats(options.bench_dir, input_size, methods = ["klee_verify", "klee_cfm_verify", "klee_sm_verify", "klee_cfmsm_verify"])
         
 
     print(results.to_csv(index=False))
