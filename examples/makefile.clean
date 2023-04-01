@@ -1,2 +1,2 @@
 clean:
-	rm -rf *.ll output*.* *.dot klee-out-*/ klee-last *.svg *.bc .*.dot 
+	rm -rf *.ll output*.* *.dot klee-*/ klee-last *.svg *.bc .*.dot 
