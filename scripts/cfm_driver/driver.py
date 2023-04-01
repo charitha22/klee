@@ -12,7 +12,8 @@ config = {
     'KTEST_BIN': lambda: config['KLEE_BUILD_DIR'] + "/bin/ktest-tool",
     'CFMSE_IGNORE_JSON': "cfmse_ignore.json",
     'KLEE_OPTIONS' : "--max-memory=51200 --max-time=1h --only-output-states-covering-new --write-cov",
-    'CFM_OPTIONS' : "-klee-cfmse -klee-cfmse-loads-symbolic"
+    'CFM_OPTIONS' : "-klee-cfmse -klee-cfmse-loads-symbolic",
+    'PROG_ARGS' : ""
 }
 
 def main():
@@ -54,9 +55,13 @@ def main():
             print("Overriding CFM_OPTIONS")
             config['CFM_OPTIONS'] = klee_options['CFM_OPTIONS']
 
+        if 'PROG_ARGS' in klee_options:
+            config['PROG_ARGS'] = klee_options['PROG_ARGS']
+
     print("Runnign CFMSE driver with follwing options:")
     print("-------------------------------------------")
     print("Input bitcode file\t: {}".format(options.input_bc))
+    print("Program arguments\t: {}".format(config['PROG_ARGS']))
     print("KLEE options\t\t: {}".format(config['KLEE_OPTIONS']))
     print("CFM options\t\t: {}".format(config['CFM_OPTIONS']))
     print("Run on directory\t: {}".format(options.run_on_dir))

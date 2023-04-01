@@ -62,7 +62,7 @@ def analyzeErroringTest(false_positive_objects_queue, execution_process_start_ti
         subprocess.run([config['KTEST_BIN'](), ktest_path])
 
     command = config['KLEE_BIN']() + " --replay-ktest-file=" + \
-        ktest_path + " " + bitcode_path
+        ktest_path + " " + bitcode_path + " " + str(config['PROG_ARGS'])
 
     debug_print("Executing : " + command)
 
@@ -93,7 +93,7 @@ def analyzeErroringTest(false_positive_objects_queue, execution_process_start_ti
                     error_detected = True
                     error_time = time.time() - execution_process_start_time
                     print("\033[1;31m", end="")
-                    print("Error found in seconds:", error_time, end="")
+                    print("\nError found in seconds:", error_time, end="")
                     print("\033[0m")
                 else:
                     error_detected = False
@@ -152,7 +152,7 @@ class TestDirectoryHandler(FileSystemEventHandler):
 
 def executeKleeWithoutTransformation(input_bitcode, output_dir, process_start_time):
     print(f"Running KLEE without CFM inside {output_dir}")
-    klee_command = f"{str(config['KLEE_BIN']())} {str(config['KLEE_OPTIONS'])} --output-dir={output_dir} {input_bitcode}"
+    klee_command = f"{str(config['KLEE_BIN']())} {str(config['KLEE_OPTIONS'])} --output-dir={output_dir} {input_bitcode} {str(config['PROG_ARGS'])}"
 
     debug_print("Executing : " + klee_command)
     # start a new process to execute KLEE
@@ -275,9 +275,9 @@ def run_main(input_bitcode, config_, run_in_dir):
             config['KLEE_OPTIONS']) + " " + str(config['CFM_OPTIONS'])
 
         if not false_positives_information:  # no false positives so far
-            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} --output-dir={klee_cfm_dir} {input_bitcode}"
+            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} --output-dir={klee_cfm_dir} {input_bitcode} {str(config['PROG_ARGS'])}"
         else:
-            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} -klee-cfmse-dont-touch-locs={str(config['CFMSE_IGNORE_JSON'])} --output-dir={klee_cfm_dir} {input_bitcode}"
+            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} -klee-cfmse-dont-touch-locs={str(config['CFMSE_IGNORE_JSON'])} --output-dir={klee_cfm_dir} {input_bitcode} {str(config['PROG_ARGS'])}"
 
         debug_print("Executing : " + command)
 
@@ -315,6 +315,7 @@ def run_main(input_bitcode, config_, run_in_dir):
                 error_time = time.time() - execution_process_start_time
                 print("\033[1;31m", end="")
                 print("KLEE: ERROR: In transformed KLEE execution!")
+                print("Error found in " + str(error_time) + " seconds")
                 print(output_str, end="")
                 print("\033[0m")
 
