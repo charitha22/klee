@@ -405,7 +405,7 @@ def run_main(input_bitcode, config_, run_in_dir):
         else:
             print("\033[1;35m", end="")
             print(
-                "KLEE re-executing to remove false positves for test ->", test_dir, end="")
+                "KLEE re-executing to remove false positves", end="")
             print("\nUsing false positive locations information ->",
                   false_positives_information, end="")
             print("\033[0m")
@@ -413,7 +413,7 @@ def run_main(input_bitcode, config_, run_in_dir):
     if klee_without_transform_process.is_alive():
         print("\033[1;35m", end="")
         print(
-            "Waiting for KLEE without Transformation to finish execution for test ->", end="")
+            "Waiting for KLEE without Transformation to finish execution", end="")
         print("\033[0m")
     klee_without_transform_process.join()
 
