@@ -14,7 +14,7 @@ from watchdog.events import FileSystemEventHandler
 from multiprocessing import Queue
 
 
-DEBUG = False 
+DEBUG = True 
 
 
 def debug_print(*args, **kwargs):
@@ -296,6 +296,9 @@ def run_main(input_bitcode, config_, run_in_dir):
     # false positives info
     false_positives_store = FalsePositiveDict()
 
+    # number of times KLEE has been re-executed with transformation
+    iteration = 0
+
     # keep re-executing KLEE with transformation until time limit is reached
     while time.time() - start_time < max_time_in_seconds:
         time_reminaing = max_time_in_seconds - int(time.time() - start_time)
@@ -304,9 +307,9 @@ def run_main(input_bitcode, config_, run_in_dir):
         klee_with_cfm_options = f" {klee_cfm_options_without_time} --max-time={time_reminaing}s "
 
         if false_positives_store.size() == 0:  # no false positives so far
-            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} --output-dir={klee_cfm_dir} {input_bitcode} {str(config['PROG_ARGS'])}"
-        else:
-            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} -klee-cfmse-dont-touch-locs={str(config['CFMSE_IGNORE_JSON'])} --output-dir={klee_cfm_dir} {input_bitcode} {str(config['PROG_ARGS'])}"
+            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} --output-dir={klee_cfm_dir}_{iteration} {input_bitcode} {str(config['PROG_ARGS'])}"
+        else: # there are false positives, ask CFM not to touch them plus seed from previous iteration
+            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} -klee-cfmse-dont-touch-locs={str(config['CFMSE_IGNORE_JSON'])} --output-dir={klee_cfm_dir}_{iteration} --seed-dir={klee_cfm_dir}_{iteration-1} {input_bitcode} {str(config['PROG_ARGS'])}"
 
         debug_print("Executing : " + command)
 
@@ -405,6 +408,7 @@ def run_main(input_bitcode, config_, run_in_dir):
             json.dump(false_positives_store.toJson(), outfile)
 
         print("New false positive found! Re-executing KLEE with transformation..")
+        iteration += 1
 
     if klee_without_transform_process.is_alive():
         print("\033[1;35m", end="")
