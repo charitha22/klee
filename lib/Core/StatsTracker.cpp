@@ -259,8 +259,6 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
   }
 
   totalCoverableInstructions = coverableSourceInsts.size();
-  outs() << totalCoverableInstructions;
-  outs() << "\n";
 
   if (OutputStats) {
     sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
@@ -365,7 +363,6 @@ void StatsTracker::done() {
     outFile.seek(0);
     for (auto const& p : sourceInstCov)
     {
-        outs() << p.first << ' ' << p.second << '\n';
         outFile << p.first << ' ' << llvm::format("%.3f", p.second) << '\n';
     }
     outFile.flush();
