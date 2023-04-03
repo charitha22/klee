@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import optparse as op
-from core_exit_on_error import run_main
+from core_exit_on_error import run_main, debug_print
 
 # global config
 config = {
@@ -32,12 +32,12 @@ def main():
 
     # if input bitcode file is not provided then exit
     if not options.input_bc:
-        print("Input bitcode file not provided")
+        debug_print("Input bitcode file not provided", tag="main")
         sys.exit(1)
     
     # if klee options file is not provided then exit
     if not options.klee_options_json:
-        print("KLEE options json not provided")
+        debug_print("KLEE options json not provided", tag="main")
         sys.exit(1)
 
     # if run-on directory is not provided then use the current directory
@@ -49,16 +49,16 @@ def main():
         klee_options = json.load(f)
         
         if 'KLEE_OPTIONS' in klee_options:
-            print("Overriding KLEE_OPTIONS")
+            debug_print("Overriding KLEE_OPTIONS", tag="main")
             config['KLEE_OPTIONS'] = klee_options['KLEE_OPTIONS']
         if 'CFM_OPTIONS' in klee_options:
-            print("Overriding CFM_OPTIONS")
+            debug_print("Overriding CFM_OPTIONS", tag="main")
             config['CFM_OPTIONS'] = klee_options['CFM_OPTIONS']
 
         if 'PROG_ARGS' in klee_options:
             config['PROG_ARGS'] = klee_options['PROG_ARGS']
 
-    print("Runnign CFMSE driver with follwing options:")
+    debug_print("Runnign CFMSE driver with follwing options:", tag="main")
     print("-------------------------------------------")
     print("Input bitcode file\t: {}".format(options.input_bc))
     print("Program arguments\t: {}".format(config['PROG_ARGS']))

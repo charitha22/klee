@@ -21,9 +21,9 @@ def debug_print(*args, tag="", **kwarg):
     if not DEBUG:
         return
     
-    print("DRIVER : ", end="")
+    # print("DRIVER : ", end="")
     if tag != "":
-        print(f"({tag}) ", end="")
+        print(f"({tag}) : ", end="")
     print(*args, **kwarg)
 
 
@@ -60,16 +60,12 @@ def getErrorLocationInformation(ktest_err_path):
 
 def analyzeErroringTest(ktest_path, bitcode_path, error_location_data):
 
-    debug_print("Analyzing Erroring Test:", ktest_path)
+    debug_print(f"Analyzing Erroring Test: {ktest_path}", tag="analyze")
 
     command = config['KLEE_BIN']() + " --replay-ktest-file=" + \
         ktest_path + " " + bitcode_path + " " + str(config['PROG_ARGS'])
 
-    debug_print("Executing : " + command)
-
-    print("\033[1;35m", end="")
-    print("KLEE replaying test ->", ktest_path, end="")
-    print("\033[0m")
+    debug_print("Executing : " + command, tag="analyze")
     process = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
     error_detected = False
 
@@ -79,10 +75,8 @@ def analyzeErroringTest(ktest_path, bitcode_path, error_location_data):
         output_str = output.decode().strip()
 
         if b'KLEE: ERROR' in output:
-            print("\033[1;31m", end="")
-            print("KLEE: ERROR: In replaying erroring test!")
-            print(output_str, end="")
-            print("\033[0m")
+            debug_print("Error detected when replaying test", tag="analyze")
+            debug_print("KLEE OUTPUT " + output_str, tag="analyze")
 
             # check if error is the same error generated from given test or another error
             error_match = re.search(r'(\.\/.+):(\d+)', output_str)
@@ -98,6 +92,7 @@ def analyzeErroringTest(ktest_path, bitcode_path, error_location_data):
         if output == b'' and process.poll() is not None:
             break
 
+    debug_print(f"Detected error is a {'TRUE ERROR!' if error_detected else 'FALSE POSITIVE!'}", tag="analyze")
     
     # error_detected is true means its a true error
     return error_detected
@@ -122,7 +117,7 @@ def executeKleeWithoutTransformation(input_bitcode, output_dir, process_start_ti
         if b'KLEE: WARNING' in output:
             debug_print(output_str, tag="klee-nocfm")
 
-        if b'KLEE: ERROR' in output:
+        if b'KLEE: ERROR: EXITING ON ERROR:' in output:
             error_time = time.time() - process_start_time
             debug_print(f"ERROR found in non-transformed KLEE run in {error_time} seconds!", tag="klee-nocfm")
 
@@ -133,14 +128,7 @@ def executeKleeWithoutTransformation(input_bitcode, output_dir, process_start_ti
         if output == b'' and process.poll() is not None:
             break
 
-    # Get the subprocess's return code
-    return_code = process.poll()
-
-    # Print the return code
-    if (return_code == 0):
-        debug_print("Symbolic execution WITHOUT transformation finished successfully", tag="klee-nocfm")
-    else:
-        debug_print("Symbolic execution WITHOUT transformation failed!", tag="klee-nocfm")
+    debug_print("KLEE without CFM finished exploration", tag="klee-nocfm")
 
 
 def keyboard_exit_handler(sig, frame):
@@ -360,7 +348,7 @@ def run_main(input_bitcode, config_, run_in_dir):
         # from ktest.err file, find the test number of the form test[0-9]+.ktest
         # using regex
         test_num = re.search(r"test[0-9]+", ktest_err_file).group(0)
-        ktest_file = os.path.join(klee_cfm_dir, test_num + ".ktest")
+        ktest_file = os.path.join(klee_cfm_output_dirname, test_num + ".ktest")
 
         # check if this error is a false positive
         true_error = analyzeErroringTest(ktest_file, input_bitcode, (filename, funcname, lineno))
@@ -397,5 +385,6 @@ def run_main(input_bitcode, config_, run_in_dir):
         debug_print("Waiting for KLEE without Transformation to finish execution",  tag="main")
 
     klee_without_transform_process.join()
+    debug_print("Driver finished execution!", tag="main")
 
 
