@@ -321,7 +321,7 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
 
   if (OutputIStats) {
     istatsFile = executor.interpreterHandler->openOutputFile("run.istats");
-    coverageFile = executor.interpreterHandler->openOutputFile("coverage.txt");
+    coverageFile = executor.interpreterHandler->openOutputFile("coverage.csv");
     if (istatsFile) {
       if (iStatsWriteInterval)
         executor.timers.add(std::make_unique<Timer>(iStatsWriteInterval, [&]{
@@ -363,7 +363,7 @@ void StatsTracker::done() {
     outFile.seek(0);
     for (auto const& p : sourceInstCov)
     {
-        outFile << p.first << ' ' << llvm::format("%.3f", p.second) << '\n';
+        outFile << p.first << ',' << llvm::format("%.3f", p.second) << '\n';
     }
     outFile.flush();
   }
