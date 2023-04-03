@@ -17,10 +17,14 @@ from multiprocessing import Queue
 DEBUG = True 
 
 
-def debug_print(*args, **kwargs):
-    if DEBUG:
-        print("DEBUG : ", end="")
-        print(*args, **kwargs)
+def debug_print(*args, tag="", **kwarg):
+    if not DEBUG:
+        return
+    
+    print("DRIVER : ", end="")
+    if tag != "":
+        print(f"({tag}) ", end="")
+    print(*args, **kwarg)
 
 
 def getErrorLocationInformation(ktest_err_path):
@@ -100,10 +104,10 @@ def analyzeErroringTest(ktest_path, bitcode_path, error_location_data):
 
 
 def executeKleeWithoutTransformation(input_bitcode, output_dir, process_start_time, klee_options):
-    print(f"Running KLEE without CFM inside {output_dir}")
+    debug_print(f"Running KLEE without CFM inside {output_dir}", tag="klee-nocfm")
     klee_command = f"{str(config['KLEE_BIN']())} {klee_options} --output-dir={output_dir} {input_bitcode} {str(config['PROG_ARGS'])}"
 
-    debug_print("Executing : " + klee_command)
+    debug_print("Executing : " + klee_command, tag="klee-nocfm")
     # start a new process to execute KLEE
     process = subprocess.Popen(
         klee_command, stderr=subprocess.PIPE, shell=True)
@@ -116,22 +120,14 @@ def executeKleeWithoutTransformation(input_bitcode, output_dir, process_start_ti
         # debug_print(output_str)
 
         if b'KLEE: WARNING' in output:
-            print("\033[1;35m", end="")
-            print(output_str, end="")
-            print("\033[0m")
+            debug_print(output_str, tag="klee-nocfm")
 
         if b'KLEE: ERROR' in output:
             error_time = time.time() - process_start_time
-            print("\033[1;31m", end="")
-            print("KLEE: ERROR: In non-transformed KLEE execution!")
-            print(output_str, end="")
-            print("\nError found in seconds:", error_time, end="")
-            print("\033[0m")
+            debug_print(f"ERROR found in non-transformed KLEE run in {error_time} seconds!", tag="klee-nocfm")
 
         if b'KLEE: done:' in output:
-            print("\033[1;32m", end="")
-            print(output_str, end="")
-            print("\033[0m")
+            debug_print(output_str, tag="klee-nocfm")
 
         # If there's no more output, break the loop
         if output == b'' and process.poll() is not None:
@@ -142,17 +138,13 @@ def executeKleeWithoutTransformation(input_bitcode, output_dir, process_start_ti
 
     # Print the return code
     if (return_code == 0):
-        print(
-            "\033[1;32mSymbolic execution WITHOUT transformation finished successfully", end="")
-        print("\033[0m")
+        debug_print("Symbolic execution WITHOUT transformation finished successfully", tag="klee-nocfm")
     else:
-        print(
-            "\033[1;31mSymbolic execution WITHOUT transform failed!", end="")
-        print("\033[0m")
+        debug_print("Symbolic execution WITHOUT transformation failed!", tag="klee-nocfm")
 
 
 def keyboard_exit_handler(sig, frame):
-    print(f"\n\nKeyboardInterrupt (ID: {sig}) has been caught. Cleaning up...")
+    debug_print(f"\n\nKeyboardInterrupt (ID: {sig}) has been caught. Cleaning up...", tag="main")
 
     def kill_child_processes_recursive(parent_pid, sig=signal.SIGTERM):
         try:
@@ -163,9 +155,9 @@ def keyboard_exit_handler(sig, frame):
         for process in children:
             process.send_signal(sig)
 
-    print("Killing all child processes...")
+    debug_print("Killing all child processes...", tag="main")
     kill_child_processes_recursive(os.getpid())
-    print("Exiting...")
+    debug_print("Exiting...", tag="main")
     sys.exit(0)
 
 
@@ -213,7 +205,7 @@ def parse_time_from_option_string(option_string):
     match = re.search(r"--max-time=([0-9]+)([h|s])", option_string)
 
     if not match:
-        print("Error: --max-time option not found in KLEE options!")
+        debug_print("Error: --max-time option not found in KLEE options!", tag="main")
         return None
 
     # if ths substring is found, remove the substring from the option string
@@ -243,7 +235,7 @@ def run_main(input_bitcode, config_, run_in_dir):
 
     # if klee_options does not contain --max-time option, print error and exit
     if not "--max-time" in klee_options:
-        print("Error: --max-time option not found in KLEE options!")
+        debug_print(f"Error: --max-time option not found in KLEE options!" , tag="main")
         sys.exit(1)
 
     # if klee_options does not contain --exit-on-error option add it
@@ -261,7 +253,7 @@ def run_main(input_bitcode, config_, run_in_dir):
 
     # if run_in_dir does not exist, print error and exit
     if not os.path.isdir(run_in_dir):
-        print(f"Error: {run_in_dir} does not exist!")
+        debug_print(f"Error: {run_in_dir} does not exist!" , tag="main")
         sys.exit(1)
 
     # if run_in_dir is not an abosolute path, make it an absolute path
@@ -270,7 +262,7 @@ def run_main(input_bitcode, config_, run_in_dir):
 
     # if input_bitcode file does not exist, print error and exit
     if not os.path.isfile(input_bitcode):
-        print(f"Error: {input_bitcode} does not exist!")
+        debug_print(f"Error: {input_bitcode} does not exist!", tag="main")
         sys.exit(1)
 
     # if input_bitcode is not an abosolute path, make it an absolute path
@@ -288,7 +280,7 @@ def run_main(input_bitcode, config_, run_in_dir):
     start_time = time.time()
 
     # spawn a new process to execute KLEE without transformation
-    print(f"Running klee without the transformation on {input_bitcode}")
+    debug_print(f"Running klee without the transformation on {input_bitcode}", tag="main")
     klee_without_transform_process=multiprocessing.Process(
         target=executeKleeWithoutTransformation, args=(input_bitcode, klee_nocfm_dir, start_time, klee_without_cfm_options))
     klee_without_transform_process.start()
@@ -306,12 +298,14 @@ def run_main(input_bitcode, config_, run_in_dir):
         # Execute KLEE with transformation on program
         klee_with_cfm_options = f" {klee_cfm_options_without_time} --max-time={time_reminaing}s "
 
-        if false_positives_store.size() == 0:  # no false positives so far
-            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} --output-dir={klee_cfm_dir}_{iteration} {input_bitcode} {str(config['PROG_ARGS'])}"
-        else: # there are false positives, ask CFM not to touch them plus seed from previous iteration
-            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} -klee-cfmse-dont-touch-locs={str(config['CFMSE_IGNORE_JSON'])} --output-dir={klee_cfm_dir}_{iteration} --seed-dir={klee_cfm_dir}_{iteration-1} {input_bitcode} {str(config['PROG_ARGS'])}"
+        klee_cfm_output_dirname = f"{klee_cfm_dir}_{iteration}"
 
-        debug_print("Executing : " + command)
+        if false_positives_store.size() == 0:  # no false positives so far
+            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} --output-dir={klee_cfm_output_dirname} {input_bitcode} {str(config['PROG_ARGS'])}"
+        else: # there are false positives, ask CFM not to touch them plus seed from previous iteration
+            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} -klee-cfmse-dont-touch-locs={str(config['CFMSE_IGNORE_JSON'])} --output-dir={klee_cfm_output_dirname} --seed-dir={klee_cfm_dir}_{iteration-1} {input_bitcode} {str(config['PROG_ARGS'])}"
+
+        debug_print("Executing : " + command, tag="main")
 
         process=subprocess.Popen(
             command, stderr=subprocess.PIPE, shell=True)
@@ -324,22 +318,15 @@ def run_main(input_bitcode, config_, run_in_dir):
             # debug_print(output_str)
 
             if b'KLEE: WARNING' in output:
-                print("\033[1;35m", end="")
-                print(output_str, end="")
-                print("\033[0m")
+                debug_print(output_str, tag="klee_cfm")
 
             if b'KLEE: ERROR' in output:
-                error_time=time.time() - start_time
-                print("\033[1;31m", end="")
-                print("KLEE: ERROR: In transformed KLEE execution!")
-                print("Error found in " + str(error_time) + " seconds")
-                print(output_str, end="")
-                print("\033[0m")
+                error_time = time.time() - start_time
+                debug_print("KLEE: ERROR: In transformed KLEE execution!", tag="klee_cfm")
+                debug_print(f"Error found in {str(error_time)} seconds", tag="klee_cfm")
 
             if b'KLEE: done:' in output:
-                print("\033[1;32m", end="")
-                print(output_str, end="")
-                print("\033[0m")
+                debug_print(output_str, tag="klee_cfm")
 
             # If there's no more output, break the loop
             if output == b'' and process.poll() is not None:
@@ -350,23 +337,19 @@ def run_main(input_bitcode, config_, run_in_dir):
 
         # Print the return code
         if (return_code == 0):
-            print(
-                "\033[1;32mSymbolic execution with CFM finished successfully", end="")
-            print("\033[0m")
+            debug_print("Symbolic execution with CFM finished successfully", tag="main")
         else:
-            print(
-                "\033[1;31mSymbolic execution with transform failed!", end="")
-            print("\033[0m")
+            debug_print("Symbolic execution with transform failed!", tag="main")
 
         # check in the klee_cfm_dir for files with .err extension using glob
-        klee_err_files = glob.glob(klee_cfm_dir + "/*.err")
+        klee_err_files = glob.glob(klee_cfm_output_dirname + "/*.err")
 
         if not klee_err_files:
-            print("No error files found! Exiting the driver loop..!")
+            debug_print("No error files found! Exiting the driver loop..!", tag="main")
             break
 
         if len(klee_err_files) > 1:
-            print("WARN : More than one error file found.. Exiting the driver loop..!")
+            debug_print("WARN : More than one error file found.. Exiting the driver loop..!", tag="main")
             break
 
         ktest_err_file = klee_err_files[0]
@@ -383,38 +366,36 @@ def run_main(input_bitcode, config_, run_in_dir):
         true_error = analyzeErroringTest(ktest_file, input_bitcode, (filename, funcname, lineno))
 
         if true_error:
-            print(f"True error found after {int(time.time() - start_time)} seconds")
-            print("Exiting the driver loop..!")
+            debug_print(f"KLEE with CFM found true error in {int(time.time() - start_time)} seconds", tag="main")
+            debug_print("Exiting the driver loop..!", tag="main")
             break
 
-        print(f"False positive found after {int(time.time() - start_time)} seconds")
-        print("Updading false positives info..!")
+        debug_print(f"KLEE with CFM found a false positive in {int(time.time() - start_time)} seconds", tag="main")
+        debug_print("Updading false positives info..!", tag="main")
 
         # if this false positive is already in the dictionary, print an error and exit loop
         if false_positives_store.hasLocInfo(filename, funcname, lineno):
-            print("False positive already found! Exiting the driver loop..!")
+            debug_print("False positive already found! Exiting the driver loop..!", tag="main")
             break
 
         # add this false positive to the dictionary
         false_positives_store.addLocInfo(filename, funcname, lineno)
 
         # print the current false positives
-        debug_print("False positives so far : ")
-        print(false_positives_store.toJson())
+        debug_print("False positives so far : ", tag="main")
+        debug_print(false_positives_store.toJson(), tag="main")
 
 
         # dumps false positive location information to json so klee can use in next iteration
         with open(config["CFMSE_IGNORE_JSON"], "w") as outfile:
             json.dump(false_positives_store.toJson(), outfile)
 
-        print("New false positive found! Re-executing KLEE with transformation..")
+        debug_print("New false positive found! Re-executing KLEE with transformation..", tag="main")
         iteration += 1
 
     if klee_without_transform_process.is_alive():
-        print("\033[1;35m", end="")
-        print(
-            "Waiting for KLEE without Transformation to finish execution", end="")
-        print("\033[0m")
+        debug_print("Waiting for KLEE without Transformation to finish execution",  tag="main")
+
     klee_without_transform_process.join()
 
 
