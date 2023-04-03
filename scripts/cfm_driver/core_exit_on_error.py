@@ -112,17 +112,11 @@ def executeKleeWithoutTransformation(input_bitcode, output_dir, process_start_ti
         output = process.stderr.readline()
         output_str = output.decode().strip()
 
-        # debug_print(output_str)
-
-        if b'KLEE: WARNING' in output:
-            debug_print(output_str, tag="klee-nocfm")
+        debug_print(output_str, tag="klee-nocfm-stdout")
 
         if b'KLEE: ERROR: EXITING ON ERROR:' in output:
             error_time = time.time() - process_start_time
             debug_print(f"ERROR found in non-transformed KLEE run in {error_time} seconds!", tag="klee-nocfm")
-
-        if b'KLEE: done:' in output:
-            debug_print(output_str, tag="klee-nocfm")
 
         # If there's no more output, break the loop
         if output == b'' and process.poll() is not None:
@@ -190,7 +184,7 @@ def parse_time_from_option_string(option_string):
     # and extract it into a tuple of (max_time, time_unit)
     # where time_unit is either 'h' or 's'
     # if no such substring is found, return None
-    match = re.search(r"--max-time=([0-9]+)([h|s])", option_string)
+    match = re.search(r"-max-time=([0-9]+)([h|s])", option_string)
 
     if not match:
         debug_print("Error: --max-time option not found in KLEE options!", tag="main")
@@ -222,12 +216,12 @@ def run_main(input_bitcode, config_, run_in_dir):
     klee_options = str(config['KLEE_OPTIONS'])
 
     # if klee_options does not contain --max-time option, print error and exit
-    if not "--max-time" in klee_options:
+    if not "-max-time" in klee_options:
         debug_print(f"Error: --max-time option not found in KLEE options!" , tag="main")
         sys.exit(1)
 
     # if klee_options does not contain --exit-on-error option add it
-    if not "--exit-on-error" in klee_options:
+    if not "-exit-on-error" in klee_options:
         klee_options += " --exit-on-error "
 
     # parse the --max-time option from the KLEE options
@@ -303,18 +297,11 @@ def run_main(input_bitcode, config_, run_in_dir):
             output=process.stderr.readline()
             output_str=output.decode().strip()
 
-            # debug_print(output_str)
-
-            if b'KLEE: WARNING' in output:
-                debug_print(output_str, tag="klee_cfm")
+            debug_print(output_str, tag="klee_cfm_stdout")
 
             if b'KLEE: ERROR' in output:
                 error_time = time.time() - start_time
-                debug_print("KLEE: ERROR: In transformed KLEE execution!", tag="klee_cfm")
-                debug_print(f"Error found in {str(error_time)} seconds", tag="klee_cfm")
-
-            if b'KLEE: done:' in output:
-                debug_print(output_str, tag="klee_cfm")
+                debug_print(f"ERROR found in CFM-transformed KLEE run in {error_time} seconds!", tag="klee-nocfm")
 
             # If there's no more output, break the loop
             if output == b'' and process.poll() is not None:

@@ -25,6 +25,8 @@ def main():
     parser.add_option("-k", "--klee-options-json", dest="klee_options_json", help="Klee options file")
     # option for run-on directory
     parser.add_option("-r", "--run-on-dir", dest="run_on_dir", help="Run on directory")
+    # option for a dry run
+    parser.add_option("-d", "--dry-run", dest="dry_run", action="store_true", help="Print the config and exit")
 
     # parse the options
     (options, args) = parser.parse_args()
@@ -66,6 +68,10 @@ def main():
     print("CFM options\t\t: {}".format(config['CFM_OPTIONS']))
     print("Run on directory\t: {}".format(options.run_on_dir))
     print("-------------------------------------------")
+
+    if options.dry_run:
+        debug_print("Dry run requested. Exiting", tag="main")
+        sys.exit(0)
 
     # run the driver
     run_main(options.input_bc, config, options.run_on_dir)
