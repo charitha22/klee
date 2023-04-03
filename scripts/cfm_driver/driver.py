@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import optparse as op
-from core import run_main
+from core_exit_on_error import run_main
 
 # global config
 config = {
