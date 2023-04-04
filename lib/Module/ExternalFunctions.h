@@ -321,6 +321,7 @@ static const std::unordered_set<std::string> ExternalFiles {
 "libc/stdio/vsnprintf.c",
 "libc/stdlib/_atexit.c",
 "libc/stdlib/getenv.c",
+"libc/stdlib/stdlib.c",
 "libc/stdlib/mktemp.c",
 "libc/stdlib/realpath.c",
 "libc/string/__xpg_strerror_r.c",

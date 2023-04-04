@@ -23,8 +23,8 @@ def debug_print(*args, tag="", **kwarg):
     
     # print("DRIVER : ", end="")
     if tag != "":
-        print(f"({tag}) : ", end="")
-    print(*args, **kwarg)
+        print(f"({tag}) : ", end="", flush=True)
+    print(*args, **kwarg, flush=True)
 
 
 def getErrorLocationInformation(ktest_err_path):
