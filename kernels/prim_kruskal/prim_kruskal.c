@@ -148,7 +148,7 @@ int kruskalMST(edge *edges, int *parent, int *rank, int n) {
 int main()
 {
     // defining graph for kruskal
-    int m = 3*SIZE;
+    int m = SIZE;
     edge *edges = (edge *)malloc(m * sizeof(edge));
     int *parentk = (int *)malloc(m * sizeof(int));
     int *rank = (int *)malloc(m * sizeof(int));
@@ -180,8 +180,10 @@ int main()
           for (int l = 0; l < m; l++){
             if (edges[l].u == i && edges[l].v == j){
               klee_assume(graph[i*n+j] == edges[l].wt);
+              klee_assume(graph[j*n+i] == edges[l].wt);
             } else {
               klee_assume(graph[i*n+j] == 0);
+              klee_assume(graph[j*n+i] == 0);
             }
           }
         }
