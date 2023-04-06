@@ -1,7 +1,7 @@
 include ../makefile.in
 
-file_name=prim
-function_to_analzye_in_cfg=prim
+file_name=prim_kruskal
+function_to_analzye_in_cfg=primMST
 
 include ../makefile.common
 

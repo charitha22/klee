@@ -61,10 +61,6 @@ int primMST(int *graph, int *parent, int *key, bool* mstSet, int n)
     return minCost;
 }
 
-#include <klee/klee.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 typedef struct _edge {
   int u, v, wt;
 } edge;
@@ -119,7 +115,7 @@ void unionSet(int u, int v, int *parent, int *rank, int n) {
 #endif
 }
 
-int kruskal(edge *edges, int *parent, int *rank, int n) {
+int kruskalMST(edge *edges, int *parent, int *rank, int n) {
   // if cfm works with ulibc then we can keep the qsort and remove assumption
   qsort(edges, n, sizeof(edge), comparator);
 
@@ -149,50 +145,52 @@ int kruskal(edge *edges, int *parent, int *rank, int n) {
   return minCost;
 }
 
-// int main() {
-//   int n = SIZE;
-//   edge *edges = (edge *)malloc(n * sizeof(edge));
-//   int *parent = (int *)malloc(n * sizeof(int));
-//   int *rank = (int *)malloc(n * sizeof(int));
-
-//   klee_make_symbolic(edges, n * sizeof(edge), "edges");
-//   klee_make_symbolic(parent, n * sizeof(int), "parent");
-//   klee_make_symbolic(rank, n * sizeof(int), "rank");
-
-//   for (int i = 0; i < n; i++) {
-//     klee_assume(edges[i].u >= 0);
-//     klee_assume(edges[i].u < n);
-//     klee_assume(edges[i].v >= 0);
-//     klee_assume(edges[i].v < n);
-//     klee_assume(edges[i].u != edges[i].v);
-//     klee_assume(edges[i].wt >= 0);
-//   }
-
-//   /*for (int i = 0; i < n-1; i++) {*/
-//   /*klee_assume(edges[i].wt <= edges[i+1].wt);*/
-//   /*}*/
-
-//   int minCost = kruskal(edges, parent, rank, n);
-//   return 0;
-// }
-
-
 int main()
 {
-    int n = SIZE;
-    int *graph = (int*)malloc(n*n*sizeof(int));
-    int *parent = (int*)malloc(n*sizeof(int));
-    int *key = (int*)malloc(n*sizeof(int));
-    bool *mstSet = (bool*)malloc(n*sizeof(bool));
-    klee_make_symbolic(graph, n*n*sizeof(int), "graph");
+    // defining graph for kruskal
+    int m = 3*SIZE;
+    edge *edges = (edge *)malloc(m * sizeof(edge));
+    int *parentk = (int *)malloc(m * sizeof(int));
+    int *rank = (int *)malloc(m * sizeof(int));
+
+    klee_make_symbolic(edges, m * sizeof(edge), "edges");
+    klee_make_symbolic(parentk, m * sizeof(int), "parentk");
+    klee_make_symbolic(rank, m * sizeof(int), "rank");
     
-    for(int i = 0; i < n; i++) {
+    for (int l = 0; l < m; l++){
+      klee_assume(edges[l].u >= 0);
+      klee_assume(edges[l].u < m);
+      klee_assume(edges[l].v >= 0);
+      klee_assume(edges[l].v < m);
+      klee_assume(edges[l].u != edges[l].v);
+      klee_assume(edges[l].wt >= 0);
+    }
+    
+    // defining graph for prim
+    int n = SIZE;
+    int *graph = (int*)malloc(n * n * sizeof(int));
+    int *parentp = (int*)malloc(n * sizeof(int));
+    int *key = (int*)malloc(n * sizeof(int));
+    bool *mstSet = (bool*)malloc(n * sizeof(bool));
+    
+    klee_make_symbolic(graph, n * n * sizeof(int), "graph");
+    
+    for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++){
-            klee_assume(graph[i * n + j] >= 0);
+          for (int l = 0; l < m; l++){
+            if (edges[l].u == i && edges[l].v == j){
+              klee_assume(graph[i*n+j] == edges[l].wt);
+            } else {
+              klee_assume(graph[i*n+j] == 0);
+            }
+          }
         }
     }
 
-    int minCost = primMST(graph, parent, key, mstSet, n);
+    int pminCost = primMST(graph, parentp, key, mstSet, n);
+    int kminCost = kruskalMST(edges, parentk, rank, m);
+
+    klee_assert(pminCost == kminCost);
 
     return 0;
 }
