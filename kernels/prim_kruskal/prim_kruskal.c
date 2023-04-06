@@ -178,7 +178,8 @@ int main()
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++){
           for (int l = 0; l < m; l++){
-            if (edges[l].u == i && edges[l].v == j){
+            if ((edges[l].u == i && edges[l].v == j) ||
+                (edges[l].v == i && edges[l].u == j)){
               klee_assume(graph[i*n+j] == edges[l].wt);
               klee_assume(graph[j*n+i] == edges[l].wt);
             } else {
