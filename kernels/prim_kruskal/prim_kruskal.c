@@ -148,26 +148,33 @@ int kruskalMST(edge *edges, int *parent, int *rank, int n) {
 int main()
 {
     // defining graph for kruskal
-    int m = SIZE;
+    int m = SIZE; // #edges
+    int n = SIZE; // #nodes
+    
     edge *edges = (edge *)malloc(m * sizeof(edge));
     int *parentk = (int *)malloc(m * sizeof(int));
     int *rank = (int *)malloc(m * sizeof(int));
 
     klee_make_symbolic(edges, m * sizeof(edge), "edges");
-    klee_make_symbolic(parentk, m * sizeof(int), "parentk");
-    klee_make_symbolic(rank, m * sizeof(int), "rank");
+    klee_make_symbolic(parentk, n * sizeof(int), "parentk");
+    klee_make_symbolic(rank, n * sizeof(int), "rank");
     
     for (int l = 0; l < m; l++){
       klee_assume(edges[l].u >= 0);
-      klee_assume(edges[l].u < m);
+      klee_assume(edges[l].u < n);
       klee_assume(edges[l].v >= 0);
-      klee_assume(edges[l].v < m);
+      klee_assume(edges[l].v < n);
       klee_assume(edges[l].u != edges[l].v);
       klee_assume(edges[l].wt >= 0);
+      for (int k = 0; k < l; k++){
+        klee_assume(edges[l].u != edges[k].u); 
+        klee_assume(edges[l].v != edges[k].v);
+        klee_assume(edges[l].u != edges[k].v);
+        klee_assume(edges[l].v != edges[k].u);
+      }
     }
     
     // defining graph for prim
-    int n = SIZE;
     int *graph = (int*)malloc(n * n * sizeof(int));
     int *parentp = (int*)malloc(n * sizeof(int));
     int *key = (int*)malloc(n * sizeof(int));
@@ -178,8 +185,9 @@ int main()
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++){
           for (int l = 0; l < m; l++){
-            if ((edges[l].u == i && edges[l].v == j) ||
-                (edges[l].v == i && edges[l].u == j)){
+            if ((edges[l].u == i && edges[l].v == j) 
+                || (edges[l].v == i && edges[l].u == j))
+            {
               klee_assume(graph[i*n+j] == edges[l].wt);
               klee_assume(graph[j*n+i] == edges[l].wt);
             } else {
