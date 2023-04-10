@@ -58,12 +58,12 @@ def getErrorLocationInformation(ktest_err_path):
     return (file_name, function_name, line_number)
 
 
-def analyzeErroringTest(ktest_path, bitcode_path, error_location_data):
+def analyzeErroringTest(ktest_path, bitcode_path, error_location_data, klee_options):
 
     debug_print(f"Analyzing Erroring Test: {ktest_path}", tag="analyze")
 
     command = config['KLEE_BIN']() + " --replay-ktest-file=" + \
-        ktest_path + " " + bitcode_path + " " + str(config['PROG_ARGS'])
+        ktest_path + f" {klee_options} " + bitcode_path + " " + str(config['PROG_ARGS'])
 
     debug_print("Executing : " + command, tag="analyze")
     process = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
@@ -105,7 +105,7 @@ def executeKleeWithoutTransformation(input_bitcode, output_dir, process_start_ti
     debug_print("Executing : " + klee_command, tag="klee-nocfm")
     # start a new process to execute KLEE
     process = subprocess.Popen(
-        klee_command, stderr=subprocess.PIPE, shell=True)
+        klee_command, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, shell=True)
 
     while True:
         # Read a line from the subprocess's standard output
@@ -146,15 +146,14 @@ def keyboard_exit_handler(sig, frame):
 # Register the signal handler for SIGINT signal
 signal.signal(signal.SIGINT, keyboard_exit_handler)
 
+def set_default( obj):
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError
 
 class FalsePositiveDict:
     def __init__(self):
         self.dict = {}
-
-    def set_default(self, obj):
-        if isinstance(obj, set):
-            return list(obj)
-        raise TypeError
 
     def addLocInfo(self, filename, funcname, lineno):
         if filename not in self.dict:
@@ -175,8 +174,8 @@ class FalsePositiveDict:
     def size(self):
         return len(self.dict)
 
-    def toJson(self):
-        return json.dumps(self.dict, default=self.set_default)
+    def getDict(self):
+        return self.dict
 
 
 def parse_time_from_option_string(option_string):
@@ -184,7 +183,9 @@ def parse_time_from_option_string(option_string):
     # and extract it into a tuple of (max_time, time_unit)
     # where time_unit is either 'h' or 's'
     # if no such substring is found, return None
-    match = re.search(r"-max-time=([0-9]+)([h|s])", option_string)
+    match = re.search(r"--max-time=([0-9]+)([h|s])", option_string)
+
+
 
     if not match:
         debug_print("Error: --max-time option not found in KLEE options!", tag="main")
@@ -205,6 +206,19 @@ def parse_time_from_option_string(option_string):
 
     # returns max time in seconds
     return [max_time, option_string]
+
+# function to extract the program name from a path to .bc file
+def get_prog_name_from_bc_path(bc_path):
+    # get the file name from the path
+    file_name = os.path.basename(bc_path)
+
+    # remove the .bc extension from the file name
+    prog_name = file_name.replace(".bc", "").split('/')[-1]
+
+    if prog_name is None:
+        return ""
+
+    return prog_name
 
 
 def run_main(input_bitcode, config_, run_in_dir):
@@ -254,9 +268,12 @@ def run_main(input_bitcode, config_, run_in_dir):
     # get current epoch time
     current_epoch = time.time()
 
+    # get the program name from the input bitcode file
+    prog_name = get_prog_name_from_bc_path(input_bitcode)
+
     # create klee-cfm-run-<epoch-time> and klee-nocfm-<epoch-time> directories
-    klee_cfm_dir = os.path.join(run_in_dir, "klee-cfm-run-" + str(int(current_epoch)))
-    klee_nocfm_dir = os.path.join(run_in_dir, "klee-nocfm-" + str(int(current_epoch)))
+    klee_cfm_dir = os.path.join(run_in_dir, f"klee-cfm-run-{prog_name}-" + str(int(current_epoch)))
+    klee_nocfm_dir = os.path.join(run_in_dir, f"klee-nocfm-{prog_name}-" + str(int(current_epoch)))
 
     # get process start time
     start_time = time.time()
@@ -290,7 +307,7 @@ def run_main(input_bitcode, config_, run_in_dir):
         debug_print("Executing : " + command, tag="main")
 
         process=subprocess.Popen(
-            command, stderr=subprocess.PIPE, shell=True)
+            command, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, shell=True)
 
         while True:
             # Read a line from the subprocess's standard output
@@ -299,7 +316,7 @@ def run_main(input_bitcode, config_, run_in_dir):
 
             debug_print(output_str, tag="klee_cfm_stdout")
 
-            if b'KLEE: ERROR' in output:
+            if b'KLEE: ERROR: EXITING ON ERROR:' in output:
                 error_time = time.time() - start_time
                 debug_print(f"ERROR found in CFM-transformed KLEE run in {error_time} seconds!", tag="klee-nocfm")
 
@@ -338,7 +355,7 @@ def run_main(input_bitcode, config_, run_in_dir):
         ktest_file = os.path.join(klee_cfm_output_dirname, test_num + ".ktest")
 
         # check if this error is a false positive
-        true_error = analyzeErroringTest(ktest_file, input_bitcode, (filename, funcname, lineno))
+        true_error = analyzeErroringTest(ktest_file, input_bitcode, (filename, funcname, lineno), klee_without_cfm_options)
 
         if true_error:
             debug_print(f"KLEE with CFM found true error in {int(time.time() - start_time)} seconds", tag="main")
@@ -358,12 +375,12 @@ def run_main(input_bitcode, config_, run_in_dir):
 
         # print the current false positives
         debug_print("False positives so far : ", tag="main")
-        debug_print(false_positives_store.toJson(), tag="main")
+        debug_print(false_positives_store.getDict(), tag="main")
 
 
         # dumps false positive location information to json so klee can use in next iteration
         with open(config["CFMSE_IGNORE_JSON"], "w") as outfile:
-            json.dump(false_positives_store.toJson(), outfile)
+            json.dump(false_positives_store.getDict(), outfile, default=set_default)
 
         debug_print("New false positive found! Re-executing KLEE with transformation..", tag="main")
         iteration += 1

@@ -24,7 +24,7 @@ def main():
     # option to take klee options file
     parser.add_option("-k", "--klee-options-json", dest="klee_options_json", help="Klee options file")
     # option for run-on directory
-    parser.add_option("-r", "--run-on-dir", dest="run_on_dir", help="Run on directory")
+    parser.add_option("-r", "--run-in-dir", dest="run_in_dir", help="Run on directory")
     # option for a dry run
     parser.add_option("-d", "--dry-run", dest="dry_run", action="store_true", help="Print the config and exit")
 
@@ -43,8 +43,13 @@ def main():
         sys.exit(1)
 
     # if run-on directory is not provided then use the current directory
-    if not options.run_on_dir:
-        options.run_on_dir = os.getcwd()
+    if not options.run_in_dir:
+        options.run_in_dir = os.getcwd()
+
+    # check if the run_in_dir exists
+    if not os.path.exists(options.run_in_dir):
+        debug_print("Run-on directory does not exist", tag="main")
+        sys.exit(1)
 
     # read the klee options json
     with open(options.klee_options_json, 'r') as f:
@@ -66,7 +71,7 @@ def main():
     print("Program arguments\t: {}".format(config['PROG_ARGS']))
     print("KLEE options\t\t: {}".format(config['KLEE_OPTIONS']))
     print("CFM options\t\t: {}".format(config['CFM_OPTIONS']))
-    print("Run on directory\t: {}".format(options.run_on_dir))
+    print("Run on directory\t: {}".format(options.run_in_dir))
     print("-------------------------------------------")
 
     if options.dry_run:
@@ -74,7 +79,7 @@ def main():
         sys.exit(0)
 
     # run the driver
-    run_main(options.input_bc, config, options.run_on_dir)
+    run_main(options.input_bc, config, options.run_in_dir)
 
     
 
