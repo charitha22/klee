@@ -2,7 +2,8 @@ import json
 import os
 import sys
 import optparse as op
-from core_exit_on_error import run_main, debug_print
+from core_exit_on_error import run_main_exit_on_error, debug_print
+from core_noexit_on_error import run_main_noexit_on_error
 
 # global config
 config = {
@@ -27,6 +28,8 @@ def main():
     parser.add_option("-r", "--run-in-dir", dest="run_in_dir", help="Run on directory")
     # option for a dry run
     parser.add_option("-d", "--dry-run", dest="dry_run", action="store_true", help="Print the config and exit")
+    # options to use exit on error
+    parser.add_option("-e", "--exit-on-error", dest="exit_on_error", action="store_true", help="Exit on error")
 
     # parse the options
     (options, args) = parser.parse_args()
@@ -79,8 +82,12 @@ def main():
         sys.exit(0)
 
     # run the driver
-    run_main(options.input_bc, config, options.run_in_dir)
-
+    if options.exit_on_error:
+        run_main_exit_on_error(options.input_bc, config, options.run_in_dir)
+        return
+    
+    run_main_noexit_on_error(options.input_bc, config, options.run_in_dir)
+    return 
     
 
 if __name__ == '__main__':
