@@ -191,4 +191,7 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir):
     klee_without_transform_process.join()
     debug_print("Driver finished execution!", tag="main")
 
+    debug_print(f"CFM output files in path  : {klee_cfm_dir}_*", tag="main")
+    debug_print(f"KLEE output files in path : {klee_nocfm_dir}", tag="main")
+
 
