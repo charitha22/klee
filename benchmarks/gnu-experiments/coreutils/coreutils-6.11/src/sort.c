@@ -241,7 +241,8 @@ static size_t merge_buffer_size = MAX (MIN_MERGE_BUFFER_SIZE, 256 * 1024);
 static size_t sort_size;
 
 /* The guessed size for non-regular files.  */
-#define INPUT_FILE_SIZE_GUESS (1024 * 1024)
+/*#define INPUT_FILE_SIZE_GUESS (1024 * 1024)*/
+#define INPUT_FILE_SIZE_GUESS 1024
 
 /* Array of directory names in which any temporary files are to be created. */
 static char const **temp_dirs;
