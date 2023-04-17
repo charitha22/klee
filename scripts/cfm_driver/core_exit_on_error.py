@@ -29,14 +29,14 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir):
         sys.exit(1)
 
     # if klee_options does not contain --exit-on-error option add it
-    if not "-exit-on-error" in klee_options:
+    if "-exit-on-error" not in klee_options:
         klee_options += " --exit-on-error "
 
     # parse the --max-time option from the KLEE options
     [max_time_in_seconds, klee_options_without_time] = parse_time_from_option_string(klee_options)
 
     # klee options for without transformation
-    klee_without_cfm_options = klee_options_without_time + f" --max-time={max_time_in_seconds}s "
+    klee_without_cfm_options = klee_options_without_time + f" --max-time={max_time_in_seconds}s --run-in-dir={run_in_dir}/klee-rundir/sandbox "
 
     # klee options for with transformation (but without --max-time option)
     klee_cfm_options_without_time = klee_options_without_time + f" {str(config['CFM_OPTIONS'])} "
@@ -49,6 +49,16 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir):
     # if run_in_dir is not an abosolute path, make it an absolute path
     if not os.path.isabs(run_in_dir):
         run_in_dir = os.path.abspath(run_in_dir)
+
+    # check if run_in_dir+"/klee-rundir/sandbox" and run_in_dir+"/cfm-rundir/sandbox" exist
+    # if not print error and exit
+    if not os.path.isdir(run_in_dir+"/klee-rundir/sandbox"):
+        debug_print(f"Error: {run_in_dir}/klee-rundir/sandbox does not exist!" , tag="main")
+        sys.exit(1)
+    
+    if not os.path.isdir(run_in_dir+"/cfm-rundir/sandbox"):
+        debug_print(f"Error: {run_in_dir}/cfm-rundir/sandbox does not exist!" , tag="main")
+        sys.exit(1)
 
     # if input_bitcode file does not exist, print error and exit
     if not os.path.isfile(input_bitcode):
@@ -89,7 +99,7 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir):
         time_reminaing = max_time_in_seconds - int(time.time() - start_time)
 
         # Execute KLEE with transformation on program
-        klee_with_cfm_options = f" {klee_cfm_options_without_time} --max-time={time_reminaing}s "
+        klee_with_cfm_options = f" {klee_cfm_options_without_time} --max-time={time_reminaing}s --run-in-dir={run_in_dir}/cfm-rundir/sandbox "
 
         klee_cfm_output_dirname = f"{klee_cfm_dir}_{iteration}"
 

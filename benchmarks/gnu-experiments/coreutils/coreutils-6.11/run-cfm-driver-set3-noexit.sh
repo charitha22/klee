@@ -16,6 +16,7 @@ do
     mkdir -p $main_dir/$benchName/cfm-rundir
     tar xzfv sandbox.tgz -C $main_dir/$benchName/klee-rundir
     tar xzfv sandbox.tgz -C $main_dir/$benchName/cfm-rundir
-    python3 ${KLEE_BUILD_DIR}/../scripts/cfm_driver/driver.py -i ./obj-llvm/src/$benchName.bc -k driver_options.json -r $main_dir/$benchName > $main_dir/$benchName/driver_output_$benchName.txt 2>&1
+    ${LLVM_BUILD_DIR}/bin/opt -S -mem2reg < ./obj-llvm/src/$benchName.bc > ./obj-llvm/src/$benchName.ll
+    python3 ${KLEE_BUILD_DIR}/../scripts/cfm_driver/driver.py -i ./obj-llvm/src/$benchName.ll -k driver_options.json -r $main_dir/$benchName > $main_dir/$benchName/driver_output_$benchName.txt 2>&1
     echo "hello" | mail -s "Done running $benchName" $USER
 done
