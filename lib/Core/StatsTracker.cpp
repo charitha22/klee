@@ -29,6 +29,7 @@
 
 #include "llvm/ADT/SmallBitVector.h"
 #include "llvm/IR/BasicBlock.h"
+#include "llvm/Support/Debug.h"
 #if LLVM_VERSION_CODE < LLVM_VERSION(8, 0)
 #include "llvm/IR/CallSite.h"
 #endif
@@ -209,7 +210,7 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
   if (useStatistics() || userSearcherRequiresMD2U())
     theStatisticManager->useIndexedStats(km->infos->getMaxID());
 
-  std::set<int> coverableSourceInsts;
+  std::set<int> coverableSourceLines;
   for (auto &kfp : km->functions) {
     KFunction *kf = kfp.get();
     kf->trackCoverage = 1;
@@ -225,17 +226,19 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
         std::string lineNumber;
         while(std::getline(stringStream, lineNumber, ',')) {
           int lineNum = std::stoi(lineNumber);
-          if(lineNum != 0 || lineNum != -1) {
-            coverableSourceInsts.insert(lineNum);
+          if(lineNum != 0 && lineNum != -1 && lineNum != -2) {
+            coverableSourceLines.insert(lineNum);
             // ki->inst->print(outs());
             // outs() << "\n";
             // outs() << lineNum;
             // outs() << "\n";
           }
         }
-      } else if(location) {
+      } 
+      
+      if(location) {
           int lineNum = static_cast<int>(location.getLine());
-          coverableSourceInsts.insert(lineNum);
+          coverableSourceLines.insert(lineNum);
           //ki->inst->print(outs());
           // outs() << "\n";
           // outs() << lineNum;
@@ -258,7 +261,7 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
     }
   }
 
-  totalCoverableInstructions = coverableSourceInsts.size();
+  totalCoverableSourceLines = coverableSourceLines.size();
 
   if (OutputStats) {
     sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
@@ -322,6 +325,7 @@ StatsTracker::StatsTracker(Executor &_executor, std::string _objectFilename,
   if (OutputIStats) {
     istatsFile = executor.interpreterHandler->openOutputFile("run.istats");
     coverageFile = executor.interpreterHandler->openOutputFile("coverage.csv");
+    cfmLocFile = executor.interpreterHandler->openOutputFile("cfmLoc.txt");
     if (istatsFile) {
       if (iStatsWriteInterval)
         executor.timers.add(std::make_unique<Timer>(iStatsWriteInterval, [&]{
@@ -367,6 +371,23 @@ void StatsTracker::done() {
     }
     outFile.flush();
   }
+
+  if (cfmLocFile) {
+    llvm::raw_fd_ostream &outFile = *cfmLocFile;
+    outFile.seek(0);
+    outFile << "Symbolic branches :\n";
+    for (auto const& p : symbolicBranches)
+    {
+      outFile << p << '\n';
+    }
+
+    outFile << "CFM locations :\n";
+    for (auto const& p : cfmLocsCovered)
+    {
+      outFile << p << '\n';
+    }
+    outFile.flush();
+  }
 }
 
 void StatsTracker::stepInstruction(ExecutionState &es) {
@@ -406,26 +427,47 @@ void StatsTracker::stepInstruction(ExecutionState &es) {
           std::stringstream stringStream(mergedLineString);
 
           std::string lineNumber;
+          bool newLinesCovered = false;
           while(std::getline(stringStream, lineNumber, ',')) {
             int lineNum = std::stoi(lineNumber);
-            if(lineNum != 0 || lineNum != -1) {
-              sourceCoveredInst.insert(lineNum);
+            if(lineNum != 0 && lineNum != -1 && lineNum != -2) {
+              if(sourceCoveredInst.insert(lineNum).second) {
+                newLinesCovered = true;
+              }
               // outs() << lineNum;
               // outs() << '\n';
             }
           }
+          if (newLinesCovered){
+            float percentCoverage = (sourceCoveredInst.size() / static_cast<float>(totalCoverableSourceLines)) * 100.0;
+            std::time_t now = std::time(nullptr);
+            sourceInstCov[now] = percentCoverage;
+
+            if (DebugLoc location = inst->getDebugLoc()) {
+              std::string fileName = location->getFilename().str();
+              std::string cfmLocCovered = fileName + ":" + mergedLineString;
+
+              // check if the string mergedLineString contains ',' characters
+              // if so then record this in cfmLocsCovered
+              if (mergedLineString.find(',') != std::string::npos) {
+                cfmLocsCovered.insert(cfmLocCovered);
+              }
+              
+            }
+          }
           
-          float percentCoverage = (sourceCoveredInst.size() / static_cast<float>(totalCoverableInstructions)) * 100.0;
-          std::time_t now = std::time(nullptr);
-          sourceInstCov[now] = percentCoverage;
-        } else if(DebugLoc location = inst->getDebugLoc()) {
+        } 
+        
+        if(DebugLoc location = inst->getDebugLoc()) {
           int lineNum = static_cast<int>(location.getLine());
           // outs() << lineNum;
           // outs() << '\n';
-          sourceCoveredInst.insert(lineNum);
-          float percentCoverage = (sourceCoveredInst.size() / static_cast<float>(totalCoverableInstructions)) * 100.0;
-          std::time_t now = std::time(nullptr);
-          sourceInstCov[now] = percentCoverage;
+          if (sourceCoveredInst.insert(lineNum).second) {
+            float percentCoverage = (sourceCoveredInst.size() / static_cast<float>(totalCoverableSourceLines)) * 100.0;
+            std::time_t now = std::time(nullptr);
+            sourceInstCov[now] = percentCoverage;
+          }
+          
         }
 
         es.coveredLines[&ii.file].insert(ii.line);
@@ -478,6 +520,14 @@ void StatsTracker::framePushed(ExecutionState &es, StackFrame *parentFrame) {
 /* Should be called _after_ the es->popFrame() */
 void StatsTracker::framePopped(ExecutionState &es) {
   // XXX remove me?
+}
+
+void StatsTracker::markSymbolicBranchVisited(KInstruction *ki) {
+  if (OutputIStats) {
+    const InstructionInfo &ii = *ki->info;
+    std::string branchName = ii.file + ":" + std::to_string(ii.line);
+    symbolicBranches.insert(branchName);
+  }
 }
 
 void StatsTracker::markBranchVisited(ExecutionState *visitedTrue,

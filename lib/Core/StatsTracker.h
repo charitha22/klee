@@ -41,6 +41,7 @@ namespace klee {
 
     std::unique_ptr<llvm::raw_fd_ostream> istatsFile;
     std::unique_ptr<llvm::raw_fd_ostream> coverageFile;
+    std::unique_ptr<llvm::raw_fd_ostream> cfmLocFile;
     ::sqlite3 *statsFile = nullptr;
     ::sqlite3_stmt *transactionBeginStmt = nullptr;
     ::sqlite3_stmt *transactionEndStmt = nullptr;
@@ -54,7 +55,11 @@ namespace klee {
     std::map<std::time_t, float> sourceInstCov;
     std::set<int> sourceCoveredInst;
     time::Point prevTime;
-    unsigned totalCoverableInstructions = 0;
+    unsigned totalCoverableSourceLines = 0;
+
+    // cfm locations covered
+    std::set<std::string> cfmLocsCovered;
+    std::set<std::string> symbolicBranches;
 
 
     CallPathManager callPathManager;
@@ -92,6 +97,8 @@ namespace klee {
     // the index for the branch itself.
     void markBranchVisited(ExecutionState *visitedTrue,
                            ExecutionState *visitedFalse);
+
+    void markSymbolicBranchVisited(KInstruction *ki);
 
     // called when execution is done and stats files should be flushed
     void done();

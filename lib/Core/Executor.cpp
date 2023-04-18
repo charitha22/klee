@@ -2197,6 +2197,13 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
       ref<Expr> cond = eval(ki, 0, state).value;
 
       cond = optimizer.optimizeExpr(cond, false);
+
+      // charitha : check if the branching condition is symbolic
+      if (!isa<ConstantExpr>(cond) && statsTracker && state.stack.back().kf->trackCoverage) {
+        statsTracker->markSymbolicBranchVisited(ki);
+      }
+
+
       Executor::StatePair branches = fork(state, cond, false, BranchType::ConditionalBranch);
 
       // NOTE: There is a hidden dependency here, markBranchVisited
