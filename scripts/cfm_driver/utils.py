@@ -88,9 +88,9 @@ def analyzeErroringTest(config, ktest_path, bitcode_path, error_location_data, k
 
 
 
-def executeKleeWithoutTransformation(config, input_bitcode, output_dir, process_start_time, klee_options):
-    debug_print(f"Running KLEE without CFM inside {output_dir}", tag="klee-nocfm")
-    klee_command = f"{str(config['KLEE_BIN']())} {klee_options} --output-dir={output_dir} {input_bitcode} {str(config['PROG_ARGS'])}"
+def executeKleeWithoutTransformation(config, input_bitcode, process_start_time, klee_options):
+    
+    klee_command = f"{str(config['KLEE_BIN']())} {klee_options} {input_bitcode} {str(config['PROG_ARGS'])}"
 
     debug_print("Executing : " + klee_command, tag="klee-nocfm")
     # start a new process to execute KLEE

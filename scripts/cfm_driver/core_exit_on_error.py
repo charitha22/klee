@@ -19,7 +19,7 @@ from utils import analyzeErroringTest
 # Register the signal handler for SIGINT signal
 signal.signal(signal.SIGINT, keyboard_exit_handler)
 
-def run_main_exit_on_error(input_bitcode, config, run_in_dir):
+def run_main_exit_on_error(input_bitcode, config, run_in_dir, dry_run=False):
 
     klee_options = str(config['KLEE_OPTIONS'])
 
@@ -31,6 +31,10 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir):
     # if klee_options does not contain --exit-on-error option add it
     if "-exit-on-error" not in klee_options:
         klee_options += " --exit-on-error "
+
+    # if .env file exists in run_in_dir, update the klee_options
+    if os.path.isfile(run_in_dir+"/test.env"):
+        klee_options += f" --env-file={run_in_dir}/test.env "
 
     # parse the --max-time option from the KLEE options
     [max_time_in_seconds, klee_options_without_time] = parse_time_from_option_string(klee_options)
@@ -82,10 +86,15 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir):
     # get process start time
     start_time = time.time()
 
+    if dry_run:
+        debug_print(f"KLEE without CFM options : {klee_without_cfm_options}", tag="main")
+        debug_print(f"KLEE with CFM options : {klee_cfm_options_without_time}", tag="main")
+        return
+
     # spawn a new process to execute KLEE without transformation
     debug_print(f"Running klee without the transformation on {input_bitcode}", tag="main")
     klee_without_transform_process=multiprocessing.Process(
-        target=executeKleeWithoutTransformation, args=(config, input_bitcode, klee_nocfm_dir, start_time, klee_without_cfm_options))
+        target=executeKleeWithoutTransformation, args=(config, input_bitcode, start_time, klee_without_cfm_options + f" --output-dir={klee_nocfm_dir} "))
     klee_without_transform_process.start()
 
     # false positives info
@@ -106,7 +115,7 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir):
         if false_positives_store.size() == 0:  # no false positives so far
             command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} --output-dir={klee_cfm_output_dirname} {input_bitcode} {str(config['PROG_ARGS'])}"
         else: # there are false positives, ask CFM not to touch them plus seed from previous iteration
-            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} -klee-cfmse-dont-touch-locs={str(config['CFMSE_IGNORE_JSON'])} --output-dir={klee_cfm_output_dirname} --seed-dir={klee_cfm_dir}_{iteration-1} {input_bitcode} {str(config['PROG_ARGS'])}"
+            command = f"{str(config['KLEE_BIN']())} {klee_with_cfm_options} -klee-cfmse-dont-touch-locs={run_in_dir}/{str(config['CFMSE_IGNORE_JSON'])} --output-dir={klee_cfm_output_dirname} --seed-dir={klee_cfm_dir}_{iteration-1} {input_bitcode} {str(config['PROG_ARGS'])}"
 
         debug_print("Executing : " + command, tag="main")
 
@@ -165,7 +174,8 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir):
             ktest_file = os.path.join(klee_cfm_output_dirname, test_num + ".ktest")
 
             # check if this error is a false positive
-            true_error = analyzeErroringTest(config, ktest_file, input_bitcode, (filename, funcname, lineno), klee_without_cfm_options)
+            klee_options_for_false_pos_check = f" {klee_without_cfm_options} --output-dir={klee_cfm_output_dirname} "
+            true_error = analyzeErroringTest(config, ktest_file, input_bitcode, (filename, funcname, lineno), klee_options_for_false_pos_check)
 
         if true_error:
             debug_print(f"KLEE with CFM found true error in {int(time.time() - start_time)} seconds", tag="main")

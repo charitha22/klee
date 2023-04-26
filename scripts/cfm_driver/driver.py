@@ -78,6 +78,12 @@ def main():
     print("-------------------------------------------")
 
     if options.dry_run:
+        
+        if options.exit_on_error:
+            run_main_exit_on_error(options.input_bc, config, options.run_in_dir, dry_run=True)
+        else:
+            run_main_noexit_on_error(options.input_bc, config, options.run_in_dir, dry_run=True)
+
         debug_print("Dry run requested. Exiting", tag="main")
         sys.exit(0)
 
@@ -85,7 +91,7 @@ def main():
     if options.exit_on_error:
         run_main_exit_on_error(options.input_bc, config, options.run_in_dir)
         return
-    
+
     run_main_noexit_on_error(options.input_bc, config, options.run_in_dir)
     return 
     
