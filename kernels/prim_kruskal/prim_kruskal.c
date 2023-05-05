@@ -104,7 +104,7 @@ void unionSet(int u, int v, int *parent, int *rank, int n) {
 
   if (rank[u] < rank[v]) {
     parent[u] = v;
-  } else if (rank[u] < rank[v]) {
+  } else if (rank[u] > rank[v]) {
     parent[v] = u;
   } else {
     parent[v] = u;
