@@ -173,8 +173,8 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir, dry_run=False):
             test_num = re.search(r"test[0-9]+", ktest_err_file).group(0)
             ktest_file = os.path.join(klee_cfm_output_dirname, test_num + ".ktest")
 
-            # check if this error is a false positive
-            klee_options_for_false_pos_check = f" {klee_without_cfm_options} --output-dir={klee_cfm_output_dirname} "
+            # options for replay test
+            klee_options_for_false_pos_check = f" {klee_options_without_time} --run-in-dir={run_in_dir}/cfm-rundir/sandbox --output-dir={run_in_dir}/FP_test_out_{iteration} "
             true_error = analyzeErroringTest(config, ktest_file, input_bitcode, (filename, funcname, lineno), klee_options_for_false_pos_check)
 
         if true_error:
@@ -199,7 +199,8 @@ def run_main_exit_on_error(input_bitcode, config, run_in_dir, dry_run=False):
 
 
         # dumps false positive location information to json so klee can use in next iteration
-        with open(config["CFMSE_IGNORE_JSON"], "w") as outfile:
+        cfmse_ignore_json = f"{run_in_dir}/" + str(config["CFMSE_IGNORE_JSON"])
+        with open(cfmse_ignore_json, "w") as outfile:
             json.dump(false_positives_store.getDict(), outfile, default=set_default)
 
         debug_print("New false positive found! Re-executing KLEE with transformation..", tag="main")

@@ -92,7 +92,8 @@ def main():
         run_main_exit_on_error(options.input_bc, config, options.run_in_dir)
         return
 
-    run_main_noexit_on_error(options.input_bc, config, options.run_in_dir)
+    debug_print("no exit on error is not maintained!!!", tag="main")
+    # run_main_noexit_on_error(options.input_bc, config, options.run_in_dir)
     return 
     
 

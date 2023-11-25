@@ -21,6 +21,7 @@
 #include "llvm/Transforms/CFMelder/CFMelder.h"
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
 #include <string>
+#include <chrono>
 #include <unordered_set>
 #define DEBUG_TYPE "KModule"
 
@@ -383,8 +384,18 @@ void KModule::optimiseAndPrepare(
       cfmseOptions.OnlySymbolicBranches = false;
     }
 
+    std::chrono::high_resolution_clock::time_point t1 =
+        std::chrono::high_resolution_clock::now();
+
     modulePassManager.addPass(CFMSEPass(cfmseOptions));
     modulePassManager.run(*module, moduleAnalysisManager);
+
+    std::chrono::high_resolution_clock::time_point t2 =
+        std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> time_span =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    errs() << "CFMSE took " << time_span.count() << " ms.\n";
   }
   else {
     // still strip non line debug info

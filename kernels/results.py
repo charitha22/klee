@@ -81,19 +81,19 @@ def print_klee_stats(bench_dir, input_size, methods = ["klee", "klee_cfm", "klee
 
     for f in files_klee:
         # read csv file and append the last row to the dataframe
-        df_klee = df_klee.append(pd.read_csv(f).tail(1))
+        df_klee = pd.concat([df_klee, pd.read_csv(f).tail(1)])
 
     for f in files_cfm:
         # read csv file and append the last row to the dataframe
-        df_klee_cfm = df_klee_cfm.append(pd.read_csv(f).tail(1))
+        df_klee_cfm = pd.concat([df_klee_cfm, pd.read_csv(f).tail(1)])
 
     for f in files_sm:
         # read csv file and append the last row to the dataframe
-        df_klee_sm = df_klee_sm.append(pd.read_csv(f).tail(1))
+        df_klee_sm = pd.concat([df_klee_sm, pd.read_csv(f).tail(1)])
 
     for f in files_cfmsm:
         # read csv file and append the last row to the dataframe
-        df_klee_cfmsm = df_klee_cfmsm.append(pd.read_csv(f).tail(1))
+        df_klee_cfmsm = pd.concat([df_klee_cfmsm, pd.read_csv(f).tail(1)])
 
     # print(df_klee['Queries'])
     # print(df_klee_cfmsm['Queries'])
