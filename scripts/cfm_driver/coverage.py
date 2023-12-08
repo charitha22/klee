@@ -47,7 +47,8 @@ def plot_cov(bench_name, klee_nocfm_outputdir, klee_cfm_outputdir):
         if cfm_df.empty:
             cfm_df = coverage_df
         else:
-            cfm_df = cfm_df.append(coverage_df, ignore_index=True)
+            # cfm_df = cfm_df.append(coverage_df, ignore_index=True)
+            cfm_df = pd.concat([cfm_df, coverage_df], ignore_index=True)
 
         
     
