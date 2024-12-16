@@ -13,3 +13,6 @@
 [submodule "benchmarks/gumbo-parser"]
 	path = benchmarks/gumbo-parser
 	url = git@github.com:charitha22/gumbo-parser.git
+[submodule "benchmarks/json.h"]
+	path = benchmarks/json.h
+	url = git@github.com:charitha22/json.h.git
