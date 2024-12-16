@@ -16,3 +16,6 @@
 [submodule "benchmarks/json.h"]
 	path = benchmarks/json.h
 	url = git@github.com:charitha22/json.h.git
+[submodule "benchmarks/protobuf-c"]
+	path = benchmarks/protobuf-c
+	url = git@github.com:charitha22/protobuf-c.git
