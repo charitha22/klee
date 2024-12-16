@@ -25,3 +25,6 @@
 [submodule "benchmarks/tiny-regex-c"]
 	path = benchmarks/tiny-regex-c
 	url = git@github.com:charitha22/tiny-regex-c.git
+[submodule "benchmarks/utf8.h"]
+	path = benchmarks/utf8.h
+	url = git@github.com:charitha22/utf8.h.git
