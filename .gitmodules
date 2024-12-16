@@ -10,3 +10,6 @@
 [submodule "benchmarks/numal"]
 	path = benchmarks/numal
 	url = git@github.com:charitha22/numal.git
+[submodule "benchmarks/gumbo-parser"]
+	path = benchmarks/gumbo-parser
+	url = git@github.com:charitha22/gumbo-parser.git
