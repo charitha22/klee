@@ -19,3 +19,9 @@
 [submodule "benchmarks/protobuf-c"]
 	path = benchmarks/protobuf-c
 	url = git@github.com:charitha22/protobuf-c.git
+[submodule "benchmarks/slre"]
+	path = benchmarks/slre
+	url = git@github.com:charitha22/slre.git
+[submodule "benchmarks/tiny-regex-c"]
+	path = benchmarks/tiny-regex-c
+	url = git@github.com:charitha22/tiny-regex-c.git
