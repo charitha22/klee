@@ -1,4 +1,5 @@
-BENCH_OUT_HOME=/local/scratch/a/$USER/cfmse-experiments
+BENCH_OUT_HOME=$HOME/local/scratch/a/$USER/cfmse-experiments
+source ~/klee/python3-venv/bin/activate
 
 function run_bench  {
     echo "Running $1"

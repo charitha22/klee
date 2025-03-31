@@ -7,7 +7,7 @@ import pandas as pd
 import optparse as op
 
 input_sizes = {'toupper': [10, 50, 100], 'connected_comp': [3, 4, 5], 'kruskal': [3, 4, 5], 'prim': [
-    4, 5, 6], 'transitive_closure': [3, 4, 5], 'detect_edges': [3, 4, 5], 'dilation': [4, 5, 6], 'erosion': [4, 5, 6], 'bitonic_sort': [4, 8, 16], 'floyd_warshall': [3, 4, 5], 'merge_sort' : [5, 10, 15]}
+    4, 5, 6], 'transitive_closure': [3, 4, 5], 'detect_edges': [3, 4, 5], 'dilation': [4, 5, 6], 'erosion': [4, 5, 6], 'bitonic_sort': [4, 8, 16], 'floyd_warshall': [3, 4, 5], 'merge_sort' : [5, 10, 15], 'regex-bug': [5, 10]}
 stats_from_klee_stat = ['Instrs', 'Time(s)', 'Queries', 'QCexCHits', 'TSolver(%)', 'AvgSolverQuerySize',
          'MaxMem(MiB)']
 other_stats = ['Explored_Paths', 'Generated_Tests', 'Completed_Paths']
@@ -100,7 +100,6 @@ def print_klee_stats(bench_dir, input_size, methods = ["klee", "klee_cfm", "klee
 
     # print the median of the stats for each dataframe
     klee_stats = []
-
     for stat in stats_from_klee_stat:
         klee_val = df_klee[stat].median() if stat in df_klee.columns else "NA"
         klee_cfm_val = df_klee_cfm[stat].median() if stat in df_klee_cfm.columns else "NA"
@@ -165,4 +164,9 @@ if __name__ == '__main__':
             print_klee_stats(options.bench_dir, input_size, methods = ["klee_verify", "klee_cfm_verify", "klee_sm_verify", "klee_cfmsm_verify"])
         
 
-    print(results.to_csv(index=False))
+
+    csv_str = results.to_csv(index=False)
+    print(csv_str)
+    fname = bench_name + ".csv"
+    with open(fname, "w", newline="") as f:
+        f.write(csv_str)

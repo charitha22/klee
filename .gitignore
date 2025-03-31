@@ -39,3 +39,18 @@ examples/setup_env.sh
 
 benchmarks/diffutils-3.6/obj-llvm
 benchmarks/setenv.h
+
+# python
+.venv
+python3-venv/
+**/site-packages/
+**/__pycache__/
+
+kernels/*/*.csv
+kernels/*/*.log
+*.ll
+
+demo/
+kernels/*.txt
+demo/*.txt
+
