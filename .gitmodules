@@ -15,7 +15,7 @@
 	url = git@github.com:charitha22/gumbo-parser.git
 [submodule "benchmarks/json.h"]
 	path = benchmarks/json.h
-	url = git@github.com:charitha22/json.h.git
+	url = https://github.com/charitha22/json.h.git
 [submodule "benchmarks/protobuf-c"]
 	path = benchmarks/protobuf-c
 	url = git@github.com:charitha22/protobuf-c.git
@@ -24,7 +24,9 @@
 	url = git@github.com:charitha22/slre.git
 [submodule "benchmarks/tiny-regex-c"]
 	path = benchmarks/tiny-regex-c
-	url = git@github.com:charitha22/tiny-regex-c.git
+	# url = git@github.com:charitha22/tiny-regex-c.git
+	url = https://github.com/charitha22/tiny-regex-c.git
 [submodule "benchmarks/utf8.h"]
 	path = benchmarks/utf8.h
-	url = git@github.com:charitha22/utf8.h.git
+	# url = git@github.com:charitha22/utf8.h.git
+	url = https://github.com/charitha22/utf8.h.git
