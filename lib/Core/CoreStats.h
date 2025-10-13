@@ -33,6 +33,8 @@ namespace stats {
   /// Number of states, this is a "fake" statistic used by istats, it
   /// isn't normally up-to-date.
   extern Statistic states;
+  extern Statistic killedStates;
+
 
   /// Instruction level statistic tracking the minimum intraprocedural
   /// distance to an uncovered instruction; this is only periodically

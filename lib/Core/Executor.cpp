@@ -3488,8 +3488,12 @@ bool Executor::checkMemoryUsage() {
       idx = theRNG.getInt32() % N;
 
     std::swap(arr[idx], arr[N - 1]);
+    // define a new stat::KilledStates
+    stats::killedStates += 1;
     terminateStateEarly(*arr[N - 1], "Memory limit exceeded.", StateTerminationType::OutOfMemory);
   }
+
+  klee_message("Killed State by hassan %d: memory limit exceeded", stats::killedStates.getValue());
 
   return false;
 }
